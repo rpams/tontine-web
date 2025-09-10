@@ -152,7 +152,7 @@ function TontineContent() {
         {/* Hero Section */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="relative">
-            <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
               <img src="/images/community.svg" alt="Community" className="w-full h-full" />
             </div>
           </div>
