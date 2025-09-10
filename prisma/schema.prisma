@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum TontineStatus {
+  DRAFT        // En création
+  ACTIVE       // En cours
+  COMPLETED    // Terminée
+  CANCELLED    // Annulée
+}
+
+enum FrequencyType {
+  DAILY
+  WEEKLY  
+  MONTHLY
+  YEARLY
+}
+
+enum TontineRoundStatus {
+  PENDING      // En attente des paiements
+  COLLECTING   // Collecte en cours
+  COMPLETED    // Tour terminé
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  telephone     String?
+  address       String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations tontine
+  createdTontines    Tontine[]           @relation("TontineCreator")
+  participations     TontineParticipant[]
+  payments           Payment[]
+  receivedInvitations TontineInvitation[] @relation("InvitedUser")
+  sentInvitations    TontineInvitation[] @relation("InviterUser")
+  
+  // Auth relations
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Tontine {
+  id                    String         @id @default(cuid())
+  name                  String
+  description           String?
+  
+  // Paramètres financiers
+  amountPerRound        Float          // Montant de base par tour
+  totalAmountPerRound   Float          // Montant total distribué par tour
+  
+  // Paramètres de fréquence
+  frequencyType         FrequencyType
+  frequencyValue        Int            @default(1) // Ex: tous les 2 mois = MONTHLY + 2
+  
+  // Statuts et dates
+  status               TontineStatus   @default(DRAFT)
+  startDate            DateTime?
+  endDate              DateTime?
+  
+  // Paramètres avancés
+  maxParticipants      Int?
+  allowMultipleShares  Boolean         @default(true)  // Autoriser paiements multiples
+  maxSharesPerUser     Int?            @default(3)     // Max 3 parts par utilisateur
+  
+  // Métadonnées
+  inviteCode           String          @unique @default(cuid())
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  
+  // Relations
+  creatorId            String
+  creator              User                    @relation("TontineCreator", fields: [creatorId], references: [id])
+  participants         TontineParticipant[]
+  rounds               TontineRound[]
+  invitations          TontineInvitation[]
+
+  @@map("tontine")
+}
+
+model TontineParticipant {
+  id              String    @id @default(cuid())
+  
+  // Paramètres de participation
+  sharesCount     Int       @default(1)    // Nombre de parts (1-3)
+  totalCommitted  Float                    // Montant total engagé
+  
+  // Statuts
+  isActive        Boolean   @default(true)
+  joinedAt        DateTime  @default(now())
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tontineId       String
+  tontine         Tontine   @relation(fields: [tontineId], references: [id], onDelete: Cascade)
+  
+  payments        Payment[]
+  wonRounds       TontineRound[] @relation("RoundWinner")
+  
+  @@unique([userId, tontineId])
+  @@map("tontine_participant")
+}
+
+model TontineRound {
+  id              String              @id @default(cuid())
+  roundNumber     Int                 // Numéro du tour (1, 2, 3...)
+  
+  // Paramètres financiers
+  expectedAmount  Float               // Montant attendu pour ce tour
+  collectedAmount Float               @default(0)
+  distributedAmount Float             @default(0)
+  
+  // Dates importantes
+  dueDate         DateTime            // Date limite de paiement
+  collectionStartDate DateTime        // Début de collecte
+  completedAt     DateTime?           // Date de finalisation
+  
+  // Statut
+  status          TontineRoundStatus  @default(PENDING)
+  
+  // Relations
+  tontineId       String
+  tontine         Tontine             @relation(fields: [tontineId], references: [id], onDelete: Cascade)
+  winnerId        String?
+  winner          TontineParticipant? @relation("RoundWinner", fields: [winnerId], references: [id])
+  
+  payments        Payment[]
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  @@unique([tontineId, roundNumber])
+  @@map("tontine_round")
+}
+
+model Payment {
+  id            String         @id @default(cuid())
+  
+  // Détails du paiement
+  amount        Float
+  sharesCount   Int            @default(1)  // Nombre de parts payées
+  
+  // Statuts et dates
+  status        PaymentStatus  @default(PENDING)
+  dueDate       DateTime
+  paidAt        DateTime?
+  
+  // Métadonnées
+  paymentMethod String?
+  transactionId String?
+  notes         String?
+  
+  // Relations
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participantId String
+  participant   TontineParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  roundId       String
+  round         TontineRound   @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  @@map("payment")
+}
+
+model TontineInvitation {
+  id          String           @id @default(cuid())
+  
+  // Détails invitation
+  email       String
+  message     String?
+  sharesCount Int              @default(1)
+  
+  // Statuts
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  
+  // Relations
+  tontineId   String
+  tontine     Tontine          @relation(fields: [tontineId], references: [id], onDelete: Cascade)
+  inviterId   String
+  inviter     User             @relation("InviterUser", fields: [inviterId], references: [id])
+  invitedId   String?          // Null si pas encore inscrit
+  invited     User?            @relation("InvitedUser", fields: [invitedId], references: [id])
+  
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  @@map("tontine_invitation")
+}
+
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
