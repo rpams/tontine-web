@@ -1,0 +1,16 @@
+{
+  "buildCommand": "prisma generate && next build",
+  "functions": {
+    "app/**/*.ts": {
+      "maxDuration": 30
+    },
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [],
+  "regions": ["fra1"],
+  "env": {
+    "PRISMA_GENERATE_DATAPROXY": "true"
+  }
+}
