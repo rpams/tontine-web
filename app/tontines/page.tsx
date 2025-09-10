@@ -103,7 +103,7 @@ function TontineContent() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
+    <div className="min-h-screen bg-stone-50/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 sm:mb-8">
@@ -321,7 +321,7 @@ function TontineContent() {
           {/* How it works */}
           <div className="max-w-3xl mx-auto px-2 sm:px-4">
             <h2 className="text-lg sm:text-xl font-bold text-center text-gray-900 mb-6 sm:mb-8">Comment ça marche ?</h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
+            <div className="space-y-6 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-6">
               <div className="text-center">
                 <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md">
                   <span className="text-xl font-bold text-white">1</span>
