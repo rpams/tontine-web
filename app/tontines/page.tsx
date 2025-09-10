@@ -67,19 +67,26 @@ function TontineContent() {
     
     // Simulation de l'API call
     setTimeout(() => {
-      if (inviteCode === "FAMILLE2024" || inviteCode === "BUSINESS123") {
+      const upperCode = inviteCode.toUpperCase().trim();
+      if (upperCode === "FAMILLE2024" || upperCode === "BUSINESS123") {
         setIsSuccess(true);
         setTontineDetails({
-          name: inviteCode === "FAMILLE2024" ? "Tontine Famille" : "Tontine Business",
-          id: inviteCode === "FAMILLE2024" ? "famille" : "business",
-          participants: inviteCode === "FAMILLE2024" ? 12 : 6,
-          amount: inviteCode === "FAMILLE2024" ? "85 000 FCFA" : "25 000 FCFA"
+          name: upperCode === "FAMILLE2024" ? "Tontine Famille" : "Tontine Business",
+          id: upperCode === "FAMILLE2024" ? "famille" : "business",
+          participants: upperCode === "FAMILLE2024" ? 12 : 6,
+          amount: upperCode === "FAMILLE2024" ? "85 000 FCFA" : "25 000 FCFA"
         });
       } else {
         setError("Code d'invitation invalide. Vérifiez et réessayez.");
       }
       setIsLoading(false);
     }, 2000);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && inviteCode && !isLoading) {
+      handleVerifyCode();
+    }
   };
 
   const handleJoinTontine = () => {
@@ -164,7 +171,7 @@ function TontineContent() {
 
         {/* Main Content */}
         <div className="max-w-2xl mx-auto">
-          <Card className="mb-4 sm:mb-6 mx-4 sm:mx-0">
+          <Card className="mb-4 sm:mb-6 mx-2 sm:mx-0">
             <CardHeader className="text-center pb-3 sm:pb-4">
               <CardTitle className="text-base sm:text-lg font-semibold">Code d'invitation requis</CardTitle>
               <CardDescription className="text-xs sm:text-sm">
@@ -200,6 +207,7 @@ function TontineContent() {
                               setInviteCode(e.target.value);
                               setError("");
                             }}
+                            onKeyPress={handleKeyPress}
                             className={`text-center font-mono text-lg tracking-wider uppercase ${
                               error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
                             }`}
@@ -293,7 +301,7 @@ function TontineContent() {
           </Card>
 
           {/* Help Section */}
-          <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3 sm:p-4 mx-4 sm:mx-0 mb-6">
+          <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3 sm:p-4 mx-2 sm:mx-0 mb-6">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Bell className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
@@ -311,31 +319,31 @@ function TontineContent() {
           </div>
 
           {/* How it works */}
-          <div className="max-w-3xl mx-auto px-4">
-            <h2 className="text-lg sm:text-xl font-bold text-center text-gray-900 mb-4 sm:mb-6">Comment ça marche ?</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+          <div className="max-w-3xl mx-auto px-2 sm:px-4">
+            <h2 className="text-lg sm:text-xl font-bold text-center text-gray-900 mb-6 sm:mb-8">Comment ça marche ?</h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
               <div className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-2 shadow-md">
-                  <span className="text-lg font-bold text-white">1</span>
+                <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md">
+                  <span className="text-xl font-bold text-white">1</span>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Recevez l'invitation</h3>
-                <p className="text-xs text-gray-600">Code ou lien d'invitation</p>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">Recevez l'invitation</h3>
+                <p className="text-sm text-gray-600">Code ou lien d'invitation</p>
               </div>
               
               <div className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-2 shadow-md">
-                  <span className="text-lg font-bold text-white">2</span>
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md">
+                  <span className="text-xl font-bold text-white">2</span>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Rejoignez</h3>
-                <p className="text-xs text-gray-600">Confirmez votre participation</p>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">Rejoignez</h3>
+                <p className="text-sm text-gray-600">Confirmez votre participation</p>
               </div>
               
               <div className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-2 shadow-md">
-                  <span className="text-lg font-bold text-white">3</span>
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-3 shadow-md">
+                  <span className="text-xl font-bold text-white">3</span>
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Épargnez</h3>
-                <p className="text-xs text-gray-600">Participez aux tours</p>
+                <h3 className="text-base font-semibold text-gray-900 mb-2">Épargnez</h3>
+                <p className="text-sm text-gray-600">Participez aux tours</p>
               </div>
             </div>
           </div>
