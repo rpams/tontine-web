@@ -33,7 +33,8 @@ import {
   UserPlus,
   Search,
   Key,
-  ExternalLink
+  ExternalLink,
+  Mail
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
@@ -96,11 +97,11 @@ function TontineContent() {
 
   return (
     <div className="min-h-screen bg-stone-50/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
-      <main className="container mx-auto px-8 py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-3">
-            <img src="/images/logo.png" alt="Tontine" className="h-8 w-auto" />
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <img src="/images/logo.png" alt="Tontine" className="h-6 sm:h-8 w-auto" />
           </div>
           
           <Popover>
@@ -141,34 +142,44 @@ function TontineContent() {
           </Popover>
         </div>
 
+        {/* Hero Section */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="relative">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
+              <img src="/images/community.svg" alt="Community" className="w-full h-full" />
+            </div>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-poppins mb-2 sm:mb-3">
+            Rejoindre une {" "}
+            <span className="relative">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">tontine</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-sm -z-10"></div>
+            </span>
+            {/* <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">tontine</span> */}
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 max-w-xl mx-auto px-4">
+            Entrez le code d'invitation pour rejoindre une tontine existante
+          </p>
+        </div>
+
         {/* Main Content */}
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-10 h-10 text-blue-600" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 font-poppins mb-2">Rejoindre une tontine</h2>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Entrez le code d'invitation partagé par l'organisateur pour rejoindre une tontine existante
-            </p>
-          </div>
-
-          <Card className="mb-6">
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-lg font-semibold">Code d'invitation requis</CardTitle>
-              <CardDescription>
+          <Card className="mb-4 sm:mb-6 mx-4 sm:mx-0">
+            <CardHeader className="text-center pb-3 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg font-semibold">Code d'invitation requis</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Vous devez disposer d'un code d'invitation valide pour rejoindre une tontine
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="w-full max-w-xs" size="lg">
+                  <Button className="w-full max-w-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transform hover:scale-105 transition-all duration-200" size="lg">
                     <UserPlus className="w-5 h-5 mr-2" />
-                    Rejoindre une tontine
+                    <span className="font-medium">Rejoindre une tontine</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md">
                   {!isSuccess ? (
                     <>
                       <DialogHeader>
@@ -187,7 +198,7 @@ function TontineContent() {
                             value={inviteCode}
                             onChange={(e) => {
                               setInviteCode(e.target.value);
-                              setError(""); // Clear error when typing
+                              setError("");
                             }}
                             className={`text-center font-mono text-lg tracking-wider uppercase ${
                               error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
@@ -281,10 +292,52 @@ function TontineContent() {
             </CardContent>
           </Card>
 
-          <div className="text-center text-sm text-gray-500">
-            <p>
-              Vous n'avez pas de code ? Demandez à l'organisateur de vous envoyer le lien d'invitation
-            </p>
+          {/* Help Section */}
+          <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3 sm:p-4 mx-4 sm:mx-0 mb-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Bell className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Pas de code ? Demandez le lien d'invitation à l'organisateur
+                </p>
+              </div>
+              <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50 text-xs px-2 py-1 h-auto">
+                <Mail className="w-3 h-3 mr-1" />
+                Support
+              </Button>
+            </div>
+          </div>
+
+          {/* How it works */}
+          <div className="max-w-3xl mx-auto px-4">
+            <h2 className="text-lg sm:text-xl font-bold text-center text-gray-900 mb-4 sm:mb-6">Comment ça marche ?</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <span className="text-lg font-bold text-white">1</span>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Recevez l'invitation</h3>
+                <p className="text-xs text-gray-600">Code ou lien d'invitation</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <span className="text-lg font-bold text-white">2</span>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Rejoignez</h3>
+                <p className="text-xs text-gray-600">Confirmez votre participation</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <span className="text-lg font-bold text-white">3</span>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Épargnez</h3>
+                <p className="text-xs text-gray-600">Participez aux tours</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
