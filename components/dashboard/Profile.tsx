@@ -432,7 +432,7 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
 
       {/* Modal de sélection d'avatar */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
-        <DialogContent className="mx-4 sm:mx-0 sm:max-w-md max-w-sm">
+        <DialogContent className="mx-auto sm:max-w-md max-w-xs">
           <DialogHeader>
             <DialogTitle className="flex items-center text-base sm:text-lg">
               <Camera className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
