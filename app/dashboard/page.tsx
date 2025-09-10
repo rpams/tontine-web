@@ -25,7 +25,8 @@ import {
   User,
   CreditCard,
   BarChart3,
-  Users
+  Users,
+  BadgeCheck
 } from "lucide-react";
 import Overview from "@/components/dashboard/Overview";
 import Profile from "@/components/dashboard/Profile";
@@ -35,6 +36,11 @@ import { Separator } from "@radix-ui/react-separator";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [userAvatar, setUserAvatar] = useState("/avatars/avatar-portrait-svgrepo-com.svg");
+  const [userVerification, setUserVerification] = useState({
+    isEmailVerified: true,
+    isDocumentVerified: true
+  });
 
   return (
     <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
@@ -56,10 +62,17 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Avatar className="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all border-2 border-blue-200 shadow-sm">
-                    <AvatarImage src="/avatars/avatar-portrait-svgrepo-com.svg" />
-                    <AvatarFallback className="bg-blue-50 text-blue-700 font-medium">JD</AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full border-2 border-blue-500 bg-blue-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all shadow-sm">
+                      <div className="w-6 h-6 rounded-full overflow-hidden">
+                        <img 
+                          src={userAvatar} 
+                          alt="Avatar utilisateur"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </PopoverTrigger>
                 <PopoverContent
                   className="w-56 p-2"
@@ -119,12 +132,22 @@ export default function Dashboard() {
         {/* User Info Block */}
         <div className="bg-white border p-3 rounded-lg mb-4 max-w-full sm:max-w-xs">
           <div className="flex items-center space-x-2.5">
-            <Avatar className="h-9 w-9">
-              <AvatarImage src="/avatars/01.png" alt="Jean Dupont" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+            <div className="w-9 h-9 rounded-full border-2 border-green-500 bg-green-50 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-full overflow-hidden">
+                <img 
+                  src={userAvatar} 
+                  alt="Jean Dupont"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-gray-900 font-poppins truncate text-sm">Jean Dupont</h3>
+              <div className="flex items-center gap-1">
+                <h3 className="font-medium text-gray-900 font-poppins truncate text-sm">Jean Dupont</h3>
+                {userVerification.isEmailVerified && userVerification.isDocumentVerified && (
+                  <BadgeCheck className="w-3 h-3 text-blue-600 flex-shrink-0" />
+                )}
+              </div>
               <div className="flex items-center text-xs text-gray-500">
                 <span className="text-gray-400 mr-1">@</span>
                 <span className="truncate">jean.dupont@email.com</span>
@@ -207,7 +230,7 @@ export default function Dashboard() {
 
         {/* Tab Content */}
         {activeTab === "overview" && <Overview />}
-        {activeTab === "profile" && <Profile />}
+        {activeTab === "profile" && <Profile onAvatarChange={setUserAvatar} currentAvatar={userAvatar} />}
         {activeTab === "tontines" && <Tontines />}
         {activeTab === "payments" && <Payments />}
       </main>

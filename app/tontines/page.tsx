@@ -103,7 +103,7 @@ function TontineContent() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
+    <div className="min-h-screen bg-stone-50/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 sm:mb-8">
