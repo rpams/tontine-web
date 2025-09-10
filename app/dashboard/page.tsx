@@ -56,9 +56,9 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Avatar className="cursor-pointer hover:ring-2 hover:ring-gray-200 transition-all">
-                    <AvatarImage src="/placeholder-avatar.jpg" />
-                    <AvatarFallback>JD</AvatarFallback>
+                  <Avatar className="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all border-2 border-blue-200 shadow-sm">
+                    <AvatarImage src="/avatars/avatar-portrait-svgrepo-com.svg" />
+                    <AvatarFallback className="bg-blue-50 text-blue-700 font-medium">JD</AvatarFallback>
                   </Avatar>
                 </PopoverTrigger>
                 <PopoverContent

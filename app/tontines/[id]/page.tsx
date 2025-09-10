@@ -63,22 +63,22 @@ export default function TontineDetail() {
     <div className="min-h-screen bg-stone-50/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
       {/* Header */}
       <header className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-12">
+        <div className="max-w-6xl mx-auto px-4 md:px-12">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <img 
                 src="/images/logo.png" 
                 alt="Logo Tontine" 
-                className="w-23 h-16 object-contain"
+                className="w-16 h-12 sm:w-23 sm:h-16 object-contain"
               />
             </div>
             
             <div className="flex items-center space-x-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Avatar className="cursor-pointer hover:ring-2 hover:ring-gray-200 transition-all">
-                    <AvatarImage src="/placeholder-avatar.jpg" />
-                    <AvatarFallback>JD</AvatarFallback>
+                  <Avatar className="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all border-2 border-blue-200 shadow-sm">
+                    <AvatarImage src="/avatars/avatar-portrait-svgrepo-com.svg" />
+                    <AvatarFallback className="bg-blue-50 text-blue-700 font-medium">JD</AvatarFallback>
                   </Avatar>
                 </PopoverTrigger>
                 <PopoverContent
@@ -131,13 +131,14 @@ export default function TontineDetail() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-12 py-8">
+      <main className="max-w-6xl mx-auto px-4 md:px-12 py-4 md:py-8">
         {/* Navigation */}
         <div className="mb-6">
-          <div className="flex items-center space-x-4 mb-4">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Retour au dashboard
+          <div className="flex items-center space-x-2 sm:space-x-4 mb-4">
+            <Button variant="ghost" size="sm" className="text-sm">
+              <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Retour au dashboard</span>
+              <span className="sm:hidden">Retour</span>
             </Button>
           </div>
           
@@ -159,27 +160,27 @@ export default function TontineDetail() {
         </div>
 
         {/* Header Info */}
-        <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-green-600" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900 font-poppins">Tontine Famille</h1>
-                <div className="flex items-center space-x-3 text-xs text-gray-500">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl font-semibold text-gray-900 font-poppins truncate">Tontine Famille</h1>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 text-xs text-gray-500">
                   <span>Créée le 15 août 2024</span>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span>12 participants</span>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between sm:justify-end space-x-2 flex-shrink-0">
               <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-xs">
                 En cours
               </Badge>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-8 h-8 p-0 sm:w-auto sm:h-auto sm:p-2">
                 <Settings className="w-4 h-4" />
               </Button>
             </div>
@@ -187,7 +188,7 @@ export default function TontineDetail() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <div className="bg-white border p-3 rounded-lg">
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-medium text-gray-600">Montant par tour</span>
@@ -241,50 +242,52 @@ export default function TontineDetail() {
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 lg:flex-[2]">
             <Tabs defaultValue="tours" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="tours">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Tours
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+                <TabsTrigger value="tours" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+                  <Trophy className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
+                  <span className="text-xs sm:text-sm">Tours</span>
                 </TabsTrigger>
-                <TabsTrigger value="ordre">
-                  <Crown className="w-4 h-4 mr-2" />
-                  Ordre des gagnants
+                <TabsTrigger value="participants" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+                  <Users className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
+                  <span className="text-xs sm:text-sm">Participants</span>
                 </TabsTrigger>
-                <TabsTrigger value="participants">
-                  <Users className="w-4 h-4 mr-2" />
-                  Participants
+                <TabsTrigger value="ordre" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+                  <Crown className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
+                  <span className="text-xs sm:text-sm hidden sm:inline">Ordre des gagnants</span>
+                  <span className="text-xs sm:hidden">Ordre</span>
                 </TabsTrigger>
-                <TabsTrigger value="historique">
-                  <History className="w-4 h-4 mr-2" />
-                  Historique
+                <TabsTrigger value="historique" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+                  <History className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
+                  <span className="text-xs sm:text-sm">Historique</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tours" className="mt-6">
                 <div className="space-y-4">
                   {/* Tour Item */}
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between mb-3">
+                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Trophy className="w-4 h-4 text-green-600" />
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <h4 className="font-medium text-gray-900 font-poppins">Tour 4</h4>
                           <p className="text-xs text-gray-500">Prochain tour</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      <div className="flex items-center justify-between sm:justify-end sm:space-x-2">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
                           À venir
                         </Badge>
                         <span className="text-sm font-medium">85 000 FCFA</span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-xs text-gray-500 mt-3">
                       <div className="flex items-center">
                         <Calendar className="w-3 h-3 mr-1" />
-                        Dans 2 jours (12 Sept 2024)
+                        <span className="hidden sm:inline">Dans 2 jours (12 Sept 2024)</span>
+                        <span className="sm:hidden">12 Sept 2024</span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="w-3 h-3 mr-1" />
@@ -358,22 +361,22 @@ export default function TontineDetail() {
               <TabsContent value="participants" className="mt-6">
                 <div className="space-y-3">
                   {/* Participant Item */}
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
+                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="flex items-center space-x-3 flex-1">
+                        <Avatar className="flex-shrink-0">
                           <AvatarFallback>JD</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <h4 className="font-medium text-gray-900">John Doe (Vous)</h4>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-medium text-gray-900 truncate">John Doe (Vous)</h4>
                           <p className="text-xs text-gray-500">Créateur • Rejoint le 15 août 2024</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
                           Créateur
                         </Badge>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                           À jour
                         </Badge>
                       </div>
@@ -563,16 +566,18 @@ export default function TontineDetail() {
                 <Crown className="w-4 h-4 text-amber-600" />
                 <h3 className="text-sm font-medium text-amber-800">Prochain gagnant</h3>
               </div>
-              <div className="relative flex items-center space-x-3 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200 shadow-sm">
+              <div className="relative flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 p-3 sm:p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200 shadow-sm">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-100/20 to-yellow-100/20 rounded-lg"></div>
-                <div className="relative w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
-                  <Crown className="w-5 h-5 text-white" />
+                <div className="relative flex items-center space-x-3 flex-1">
+                  <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                    <Crown className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="relative flex-1">
+                    <div className="font-semibold text-amber-900 text-sm">Marie Dubois</div>
+                    <div className="text-xs text-amber-700">Tour 4 • Dans 2 jours</div>
+                  </div>
                 </div>
-                <div className="relative flex-1">
-                  <div className="font-semibold text-amber-900 text-sm">Marie Dubois</div>
-                  <div className="text-xs text-amber-700">Tour 4 • Dans 2 jours</div>
-                </div>
-                <div className="relative text-right">
+                <div className="relative text-left sm:text-right">
                   <div className="text-sm font-bold text-amber-800">85 000 FCFA</div>
                   <div className="text-xs text-amber-600">À recevoir</div>
                 </div>
@@ -582,7 +587,7 @@ export default function TontineDetail() {
             {/* Bouton de paiement */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-gray-700">Effectuer un paiement</h3>
-              <div className="bg-white border rounded-lg p-4">
+              <div className="bg-white border rounded-lg p-3 sm:p-4">
                 <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="w-full mb-3" size="lg">

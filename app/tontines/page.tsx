@@ -105,10 +105,10 @@ function TontineContent() {
           
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                  <AvatarFallback>JD</AvatarFallback>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all border-2 border-blue-200 shadow-sm">
+                  <AvatarImage src="/avatars/avatar-portrait-svgrepo-com.svg" alt="Avatar" />
+                  <AvatarFallback className="bg-blue-50 text-blue-700 font-medium text-xs">JD</AvatarFallback>
                 </Avatar>
               </Button>
             </PopoverTrigger>

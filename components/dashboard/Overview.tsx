@@ -40,7 +40,7 @@ export default function Overview() {
   return (
     <>
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <div className="bg-white border p-3" style={{borderRadius: '4px'}}>
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-medium text-gray-600">Total épargné</span>
@@ -108,7 +108,7 @@ export default function Overview() {
             {/* Search & Filters */}
             <div className="space-y-3 mb-6">
               {/* Search Bar & Filters Row */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex items-center gap-3">
                 <div className="relative flex-1 bg-white">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input 
@@ -119,9 +119,8 @@ export default function Overview() {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-[160px] justify-start">
-                      <Filter className="w-4 h-4 mr-2" />
-                      Filtres
+                    <Button variant="outline" className="w-10 h-10 p-0" size="sm">
+                      <Filter className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56">
@@ -154,8 +153,8 @@ export default function Overview() {
               </div>
               
               {/* Selected Filters as Badges */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <div className="flex flex-wrap gap-2 min-w-0">
+              <div className="flex items-center gap-2">
+                <div className="flex flex-wrap gap-2 flex-1">
                   <Badge className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
                     Active
@@ -178,7 +177,7 @@ export default function Overview() {
                   </Badge>
                 </div>
                 
-                <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-500">
+                <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-500 p-1 h-auto">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
