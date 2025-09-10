@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-export default function TontinesPage() {
+function TontineContent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -289,5 +289,20 @@ export default function TontinesPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function TontinesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-stone-50/90 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <TontineContent />
+    </Suspense>
   );
 }
