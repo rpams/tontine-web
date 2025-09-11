@@ -70,14 +70,38 @@ export default function TontineDetail() {
           text: 'Rejoignez ma tontine familiale !',
           url: shareUrl,
         });
+        return;
       } catch (error) {
-        // Fallback to clipboard if sharing is cancelled
-        navigator.clipboard.writeText(shareUrl);
+        console.log('Partage annulé ou échoué, fallback vers clipboard');
       }
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      navigator.clipboard.writeText(shareUrl);
-      // You could show a toast notification here
+    }
+
+    // Fallback pour les navigateurs desktop
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Lien copié dans le presse-papier !');
+      } else {
+        // Fallback ultime pour les anciens navigateurs ou HTTP
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          document.execCommand('copy');
+          alert('Lien copié dans le presse-papier !');
+        } catch (err) {
+          alert(`Impossible de copier automatiquement. Voici le lien à partager :\n\n${shareUrl}`);
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+    } catch (error) {
+      alert(`Voici le lien à partager :\n\n${shareUrl}`);
     }
   };
 
@@ -198,23 +222,25 @@ export default function TontineDetail() {
               </div>
             </div>
             
-            <div className="flex items-center justify-between sm:justify-end space-x-2 flex-shrink-0">
+            <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
               <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-xs">
                 En cours
               </Badge>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-8 h-8 p-0 sm:w-auto sm:h-auto sm:p-2 cursor-pointer"
-                onClick={handleShare}
-              >
-                <Share2 className="w-4 h-4" />
-                <span className="hidden sm:inline sm:ml-2">Partager</span>
-              </Button>
-              <Button variant="outline" size="sm" className="w-8 h-8 p-0 sm:w-auto sm:h-auto sm:p-2 cursor-pointer">
-                <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline sm:ml-2">Paramètres</span>
-              </Button>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-7 h-7 p-0 sm:w-auto sm:h-auto sm:p-2 cursor-pointer"
+                  onClick={handleShare}
+                >
+                  <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline sm:ml-2">Partager</span>
+                </Button>
+                <Button variant="outline" size="sm" className="w-7 h-7 p-0 sm:w-auto sm:h-auto sm:p-2 cursor-pointer">
+                  <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline sm:ml-2">Paramètres</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
