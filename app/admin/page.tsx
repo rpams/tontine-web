@@ -96,7 +96,7 @@ export default function AdminPanel() {
     totalTontines: 156,
     activeTontines: 89,
     totalTransactions: 3420,
-    totalRevenue: "2,450,000 FCFA",
+    totalRevenue: "2,450,000",
     pendingVerifications: 23,
     newUsersThisWeek: 47
   };
@@ -315,8 +315,8 @@ export default function AdminPanel() {
         {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Utilisateurs totaux</p>
@@ -329,7 +329,7 @@ export default function AdminPanel() {
                 </div>
               </Card>
 
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Tontines actives</p>
@@ -342,7 +342,7 @@ export default function AdminPanel() {
                 </div>
               </Card>
 
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Transactions</p>
@@ -355,10 +355,10 @@ export default function AdminPanel() {
                 </div>
               </Card>
 
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-gray-600">Revenus totaux</p>
+                    <p className="text-xs font-medium text-gray-600">Revenus totaux (CFA)</p>
                     <p className="text-xl font-bold">{stats.totalRevenue}</p>
                     <p className="text-xs text-gray-500">Depuis le lancement</p>
                   </div>
@@ -376,7 +376,7 @@ export default function AdminPanel() {
                   <CardTitle className="text-lg">Validations en attente</CardTitle>
                   <CardDescription>Utilisateurs nécessitant une validation</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-4 md:px-6">
                   {/* Desktop Table */}
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full">
@@ -760,7 +760,7 @@ export default function AdminPanel() {
             {/* Search and Filters */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex items-center space-x-4 w-full sm:w-auto">
-                <div className="relative flex-1 sm:flex-initial">
+                <div className="relative flex-1 sm:flex-initial bg-white">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Rechercher un utilisateur..."
@@ -770,7 +770,7 @@ export default function AdminPanel() {
                   />
                 </div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-full sm:w-40">
+                  <SelectTrigger className="w-full sm:w-40 bg-white">
                     <SelectValue placeholder="Statut" />
                   </SelectTrigger>
                   <SelectContent>
@@ -818,7 +818,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 md:px-6">
                 {/* Desktop Table */}
                 <div className="hidden lg:block">
                   <Table>
@@ -1042,8 +1042,8 @@ export default function AdminPanel() {
         {activeTab === "tontines" && (
           <div className="space-y-6">
             {/* Tontines Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="p-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Tontines actives</p>
@@ -1056,7 +1056,7 @@ export default function AdminPanel() {
                 </div>
               </Card>
               
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">En attente</p>
@@ -1069,7 +1069,7 @@ export default function AdminPanel() {
                 </div>
               </Card>
               
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Terminées</p>
@@ -1107,7 +1107,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 md:px-6">
                 {/* Desktop Table */}
                 <div className="hidden lg:block">
                   <Table>
@@ -1365,8 +1365,8 @@ export default function AdminPanel() {
         {activeTab === "payments" && (
           <div className="space-y-6">
             {/* Payment Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Transactions aujourd'hui</p>
@@ -1379,7 +1379,7 @@ export default function AdminPanel() {
                 </div>
               </Card>
               
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Volume du jour</p>
@@ -1392,7 +1392,7 @@ export default function AdminPanel() {
                 </div>
               </Card>
               
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">En attente</p>
@@ -1405,7 +1405,7 @@ export default function AdminPanel() {
                 </div>
               </Card>
               
-              <Card className="p-4">
+              <Card className="p-4 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-600">Taux d'échec</p>
@@ -1443,7 +1443,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 md:px-6">
                 {/* Desktop Table */}
                 <div className="hidden lg:block">
                   <Table>
