@@ -62,6 +62,8 @@ import {
   MoreHorizontal,
   Edit,
   Trash2,
+  Crown,
+  Zap,
   UserCheck,
   UserX,
   Eye,
@@ -125,21 +127,34 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
+    <div className="min-h-screen bg-stone-100/90 relative" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
+      {/* Admin Background Pattern */}
+      <div className="fixed inset-0 opacity-5 pointer-events-none z-0">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ef4444' fill-opacity='0.1'%3E%3Cpath d='M30 15l15 15-15 15-15-15z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px'
+        }}>
+        </div>
+      </div>
+
+
       {/* Header */}
-      <header className="bg-white border-b">
+      <header className="bg-white border-b relative z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-12">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <img 
-                src="/images/logo.png" 
-                alt="Logo Tontine" 
-                className="w-16 h-12 sm:w-23 sm:h-16 object-contain"
-              />
+              <div className="relative">
+                <img 
+                  src="/images/logo.png" 
+                  alt="Logo Tontine" 
+                  className="w-16 h-12 sm:w-23 sm:h-16 object-contain"
+                />
+              </div>
               <div className="hidden sm:block">
-                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 font-medium">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Admin
+                <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white border-0 shadow-md hover:from-red-600 hover:to-red-700 transition-all duration-300">
+                  <Shield className="w-4 h-4 mr-2" />
+                  <span className="font-bold">ADMIN</span>
+                  <Crown className="w-4 h-4 ml-1" />
                 </Badge>
               </div>
             </div>
@@ -153,7 +168,7 @@ export default function AdminPanel() {
               <Popover>
                 <PopoverTrigger asChild>
                   <div className="relative">
-                    <div className="w-8 h-8 rounded-full border-2 border-red-500 bg-red-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-red-300 transition-all shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-gray-300 transition-all shadow-sm">
                       <div className="w-6 h-6 rounded-full overflow-hidden">
                         <img 
                           src="/avatars/avatar-portrait-svgrepo-com.svg" 
@@ -209,12 +224,12 @@ export default function AdminPanel() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-12 py-4 md:py-8">
         {/* Admin Info Block */}
-        <div className="bg-white border p-3 rounded-lg mb-4 max-w-full sm:max-w-xs">
+        <div className="bg-white border border-red-500 p-3 rounded-lg mb-4 max-w-full sm:max-w-xs">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-full border-2 border-red-500 bg-red-50 flex items-center justify-center">
-              <div className="w-7 h-7 rounded-full overflow-hidden">
+            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full overflow-hidden">
                 <img 
-                  src="/avatars/avatar-portrait-svgrepo-com.svg" 
+                  src="/avatars/avatar-jkjnlef.svg" 
                   alt="Admin"
                   className="w-full h-full object-cover"
                 />
@@ -241,46 +256,71 @@ export default function AdminPanel() {
                 variant={activeTab === "overview" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveTab("overview")}
-                className="flex items-center"
+                className={`flex items-center transition-all duration-300 ${
+                  activeTab === "overview" ? 
+                  "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md" : 
+                  "hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                }`}
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Tableau de bord
+                {activeTab === "overview" && <Zap className="w-3 h-3 ml-1 animate-pulse" />}
               </Button>
               <Button
                 variant={activeTab === "users" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveTab("users")}
-                className="flex items-center"
+                className={`flex items-center transition-all duration-300 ${
+                  activeTab === "users" ? 
+                  "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md" : 
+                  "hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                }`}
               >
                 <Users className="w-4 h-4 mr-2" />
                 Utilisateurs
+                {activeTab === "users" && <Zap className="w-3 h-3 ml-1 animate-pulse" />}
               </Button>
               <Button
                 variant={activeTab === "tontines" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveTab("tontines")}
-                className="flex items-center"
+                className={`flex items-center transition-all duration-300 ${
+                  activeTab === "tontines" ? 
+                  "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md" : 
+                  "hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                }`}
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 Tontines
+                {activeTab === "tontines" && <Zap className="w-3 h-3 ml-1 animate-pulse" />}
               </Button>
               <Button
                 variant={activeTab === "payments" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveTab("payments")}
-                className="flex items-center"
+                className={`flex items-center transition-all duration-300 ${
+                  activeTab === "payments" ? 
+                  "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md" : 
+                  "hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                }`}
               >
                 <CreditCard className="w-4 h-4 mr-2" />
                 Paiements
+                {activeTab === "payments" && <Zap className="w-3 h-3 ml-1 animate-pulse" />}
               </Button>
               <Button
                 variant={activeTab === "settings" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveTab("settings")}
-                className="flex items-center"
+                className={`flex items-center transition-all duration-300 ${
+                  activeTab === "settings" ? 
+                  "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md" : 
+                  "hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                }`}
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Paramètres
+                {activeTab === "settings" && <Zap className="w-3 h-3 ml-1 animate-pulse" />}
               </Button>
             </div>
             
@@ -1774,6 +1814,32 @@ export default function AdminPanel() {
             </Card>
           </div>
         )}
+        
+        {/* Admin Footer */}
+        {/* <footer className="mt-12 bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 border-t border-purple-200 p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                  <Crown className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Session Administrateur</p>
+                  <p className="text-xs text-gray-500">Connecté depuis {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                <span className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  Système opérationnel
+                </span>
+                <span>v2.1.0</span>
+                <span>© 2024 Tontine Admin</span>
+              </div>
+            </div>
+          </div>
+        </footer> */}
       </main>
     </div>
   );
