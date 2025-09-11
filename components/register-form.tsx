@@ -71,7 +71,7 @@ export function RegisterForm({
           setError("");
         },
         onSuccess: (ctx) => {
-          router.push("/dashboard");
+          router.push("/complete-profile");
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);
@@ -97,7 +97,7 @@ export function RegisterForm({
             </div>
           )}
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid gap-3">
+            <div className="grid gap-4 sm:gap-5">
               <div className="flex flex-col gap-4">
                 <Button variant="outline" className="w-full">
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -126,9 +126,9 @@ export function RegisterForm({
                   Ou s&apos;inscrire avec
                 </span>
               </div>
-              <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="grid gap-2">
+              <div className="grid gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid gap-2 sm:gap-3">
                     <Label htmlFor="firstName">Prénom</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -144,7 +144,7 @@ export function RegisterForm({
                       <p className="text-sm text-red-600">{errors.firstName.message}</p>
                     )}
                   </div>
-                  <div className="grid gap-2">
+                  <div className="grid gap-2 sm:gap-3">
                     <Label htmlFor="lastName">Nom</Label>
                     <div className="relative">
                       <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -161,7 +161,7 @@ export function RegisterForm({
                     )}
                   </div>
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:gap-3">
                   <Label htmlFor="email">Adresse e-mail</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -177,7 +177,7 @@ export function RegisterForm({
                     <p className="text-sm text-red-600">{errors.email.message}</p>
                   )}
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:gap-3">
                   <Label htmlFor="password">Mot de passe</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -196,14 +196,14 @@ export function RegisterForm({
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Au moins 8 caractères avec une majuscule et un chiffre
                   </p>
                   {errors.password && (
                     <p className="text-sm text-red-600">{errors.password.message}</p>
                   )}
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:gap-3">
                   <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -228,7 +228,7 @@ export function RegisterForm({
                 </div>
                 <SubmitButton isValid={isValid} isLoading={isLoading} />
               </div>
-              <div className="text-center text-sm">
+              <div className="text-center text-sm sm:text-base">
                 Vous avez déjà un compte ?{" "}
                 <a href="/login" className="underline underline-offset-4">
                   Se connecter
@@ -238,7 +238,7 @@ export function RegisterForm({
           </form>
         </CardContent>
       </Card>
-      <div className="text-muted-foreground text-center text-xs text-balance">
+      <div className="text-muted-foreground text-center text-xs sm:text-sm text-balance px-4">
         En créant un compte, vous acceptez nos{" "}
         <a href="#" className="underline underline-offset-4 hover:text-primary">
           Conditions d&apos;utilisation

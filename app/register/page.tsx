@@ -21,15 +21,15 @@ export default function RegisterPage() {
       </div>
       
       {/* Contenu scrollable par-dessus */}
-      <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-6 p-6 md:p-10">
-        <div className="flex w-full max-w-sm flex-col gap-4">
+      <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-4 p-4 sm:p-6 md:p-10">
+        <div className="flex w-full max-w-sm flex-col gap-4 sm:gap-6">
         <a href="#" className="items-center gap-2 self-center font-medium">
             <Image
               src="/images/logo.png"
               alt="Tontine"
-              width={120}
-              height={52}
-              className="drop-shadow-lg"
+              width={100}
+              height={43}
+              className="w-20 h-auto sm:w-[100px] md:w-[120px] drop-shadow-lg"
             />
           </a>
           <RegisterForm />
