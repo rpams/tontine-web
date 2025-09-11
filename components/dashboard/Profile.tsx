@@ -432,95 +432,89 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
 
       {/* Modal de sélection d'avatar */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
-        <DialogContent className="mx-auto sm:max-w-md max-w-xs">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-base sm:text-lg">
-              <Camera className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
+        <DialogContent className="mx-auto sm:max-w-md max-w-[95vw] h-[90vh] sm:h-auto overflow-y-auto p-0">
+          <DialogHeader className="px-3 sm:px-6 pt-4 sm:pt-6">
+            <DialogTitle className="flex items-center text-lg sm:text-xl">
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-blue-600" />
               Changer l'avatar
             </DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
+            <DialogDescription className="text-sm text-left">
               Sélectionnez un avatar prédéfini ou téléchargez votre propre photo
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 sm:space-y-6">
-            {/* Avatars prédéfinis */}
-            <div>
-              <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Avatars prédéfinis</Label>
-              <div className="flex flex-wrap gap-y-2 sm:gap-y-3 space-x-2 sm:space-x-3">
-                {availableAvatars.map((avatar, index) => {
-                  const borderColors = [
-                    'border-blue-500',
-                    'border-green-500', 
-                    'border-purple-500',
-                    'border-orange-500',
-                    'border-pink-500',
-                    'border-indigo-500',
-                    'border-red-500',
-                    'border-teal-500'
-                  ];
-                  const bgColors = [
-                    'bg-blue-50',
-                    'bg-green-50',
-                    'bg-purple-50', 
-                    'bg-orange-50',
-                    'bg-pink-50',
-                    'bg-indigo-50',
-                    'bg-red-50',
-                    'bg-teal-50'
-                  ];
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedAvatar(avatar)}
-                      className="relative transition-all hover:scale-105"
-                    >
-                      {/* Cercle avec bordure colorée */}
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedAvatar === avatar 
-                          ? `${borderColors[index]} ${bgColors[index]} shadow-lg` 
-                          : `${borderColors[index]} bg-white hover:${bgColors[index]}`
-                      }`}>
-                        {/* Avatar à l'intérieur du cercle */}
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden">
-                          <img 
-                            src={avatar} 
-                            alt={`Avatar ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </div>
-                      {selectedAvatar === avatar && (
-                        <div className="absolute -top-0.5 -right-1 sm:-top-1 sm:-right-2 h-3 w-3 sm:h-3.5 sm:w-3.5 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
-                          <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-white" />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+          <div className="space-y-4 sm:space-y-5 px-3 sm:px-6">
+            {/* Avatar actuel et avatars prédéfinis sur la même ligne sur desktop */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Preview */}
+              <div className="flex items-center gap-3 sm:w-auto">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                  <img 
+                    src={selectedAvatar} 
+                    alt="Avatar sélectionné"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="sm:hidden">
+                  <p className="text-sm font-medium text-gray-900">Aperçu</p>
+                  <p className="text-xs text-gray-500">Avatar sélectionné</p>
+                </div>
               </div>
-            </div>
 
-            {/* Upload personnalisé */}
-            <div>
-              <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Photo personnalisée</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 sm:p-4 text-center hover:border-gray-400 transition-colors">
-                <div className="space-y-2">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-                    <Upload className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+              {/* Avatars et upload sur la droite */}
+              <div className="flex-1 space-y-3">
+                <div className="hidden sm:block">
+                  <p className="text-sm text-gray-600 mb-2">
+                    Choisissez un avatar ou uploadez une photo
+                  </p>
+                </div>
+                
+                {/* Avatars prédéfinis */}
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 mb-2 block sm:hidden">Choisir un avatar</Label>
+                  <div className="flex flex-wrap gap-2 justify-start">
+                    {availableAvatars.map((avatar, index) => {
+                      const borderColors = [
+                        'border-blue-500', 'border-green-500', 'border-purple-500', 'border-orange-500',
+                        'border-pink-500', 'border-indigo-500', 'border-red-500', 'border-teal-500'
+                      ];
+                      const bgColors = [
+                        'bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-orange-50',
+                        'bg-pink-50', 'bg-indigo-50', 'bg-red-50', 'bg-teal-50'
+                      ];
+                      
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedAvatar(avatar)}
+                          className="relative transition-all hover:scale-105"
+                        >
+                          <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 flex items-center justify-center transition-all ${
+                            selectedAvatar === avatar 
+                              ? `${borderColors[index]} ${bgColors[index]} shadow-lg` 
+                              : `${borderColors[index]} bg-white hover:${bgColors[index]}`
+                          }`}>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden">
+                              <img 
+                                src={avatar} 
+                                alt={`Avatar ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                          {selectedAvatar === avatar && (
+                            <div className="absolute -top-1 -right-1 h-4 w-4 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
+                              <Check className="h-2 w-2 text-white" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => document.getElementById('avatar-upload')?.click()}
-                      className="text-xs sm:text-sm h-8 sm:h-9"
-                    >
-                      Télécharger une photo
-                    </Button>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG jusqu'à 5MB</p>
-                  </div>
+                </div>
+
+                {/* Upload photo personnalisée - compact */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                   <input
                     id="avatar-upload"
                     type="file"
@@ -531,36 +525,36 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                     }}
                     className="hidden"
                   />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('avatar-upload')?.click()}
+                    className="w-full sm:w-auto text-sm h-9 px-4"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload photo
+                  </Button>
+                  <p className="text-xs text-gray-500 text-left">PNG, JPG jusqu'à 5MB</p>
                 </div>
               </div>
             </div>
 
-            {/* Prévisualisation */}
-            <div>
-              <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Prévisualisation</Label>
-              <div className="flex items-center space-x-3 p-2 sm:p-3 border border-gray-200 rounded-lg bg-gray-50">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex-shrink-0">
-                  <img 
-                    src={selectedAvatar} 
-                    alt="Prévisualisation avatar"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">Jean Dupont</p>
-                  <p className="text-xs text-gray-500">Aperçu de votre profil</p>
-                </div>
-              </div>
-            </div>
           </div>
 
-          <DialogFooter className="gap-2 flex-col sm:flex-row">
-            <Button variant="outline" onClick={handleAvatarCancel} className="w-full sm:w-auto text-sm">
-              Annuler
+          <DialogFooter className="gap-3 flex-col sm:flex-row px-3 sm:px-6 pb-4 sm:pb-6">
+            <Button 
+              onClick={handleAvatarSave}
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white font-semibold py-2.5 sm:py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Sauvegarder les modifications
             </Button>
-            <Button onClick={handleAvatarSave} className="w-full sm:w-auto text-sm">
-              <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-              Sauvegarder
+            <Button 
+              variant="outline" 
+              onClick={handleAvatarCancel} 
+              className="w-full sm:w-auto bg-white/10 backdrop-blur-sm border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 py-2.5 sm:py-2 rounded-lg font-medium transition-all"
+            >
+              Annuler
             </Button>
           </DialogFooter>
         </DialogContent>

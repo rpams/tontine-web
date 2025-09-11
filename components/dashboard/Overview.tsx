@@ -17,6 +17,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -33,10 +41,32 @@ import {
   X,
   Trash2,
   Trophy,
-  Coins
+  Coins,
+  Eye
 } from "lucide-react";
+import { useState } from "react";
 
 export default function Overview() {
+  const [activeTab, setActiveTab] = useState("gains");
+
+  // Données complètes pour les sheets
+  const allGains = [
+    { name: "Tontine Famille", tour: 3, date: "Dans 2 jours", amount: "85 000 FCFA", status: "confirmed" },
+    { name: "Épargne Projet", tour: 8, date: "Dans 12 jours", amount: "120 000 FCFA", status: "confirmed" },
+    { name: "Business Fund", tour: 5, date: "Dans 18 jours", amount: "45 000 FCFA", status: "pending" },
+    { name: "Tontine Amis", tour: 2, date: "Dans 25 jours", amount: "30 000 FCFA", status: "pending" },
+    { name: "Épargne Voyage", tour: 7, date: "Dans 30 jours", amount: "75 000 FCFA", status: "confirmed" },
+  ];
+
+  const allContributions = [
+    { name: "Tontine Business", tour: 2, date: "Demain", amount: "25 000 FCFA", status: "pending" },
+    { name: "Épargne Projet", tour: 5, date: "Dans 5 jours", amount: "15 000 FCFA", status: "confirmed" },
+    { name: "Tontine Famille", tour: 4, date: "Dans 9 jours", amount: "10 000 FCFA", status: "confirmed" },
+    { name: "Business Fund", tour: 6, date: "Dans 14 jours", amount: "20 000 FCFA", status: "pending" },
+    { name: "Tontine Amis", tour: 3, date: "Dans 21 jours", amount: "12 000 FCFA", status: "confirmed" },
+    { name: "Épargne Voyage", tour: 8, date: "Dans 28 jours", amount: "18 000 FCFA", status: "pending" },
+  ];
+
   return (
     <>
       {/* Stats Cards */}
@@ -280,7 +310,7 @@ export default function Overview() {
             <h3 className="text-lg font-semibold text-gray-900 font-poppins">Tours à venir</h3>
             <p className="text-sm text-gray-600">Cette semaine</p>
             </div>
-            <Tabs defaultValue="gains" className="w-full">
+            <Tabs defaultValue="gains" className="w-full" onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="gains">
                   <Trophy className="w-4 h-4 mr-2" />
@@ -345,6 +375,125 @@ export default function Overview() {
                 </div>
               </TabsContent>
             </Tabs>
+
+            {/* Bouton Voir tout */}
+            <div className="mt-4 text-center">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium">
+                    Voir tout
+                    <ArrowUpRight className="w-3 h-3 ml-1" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-full sm:max-w-lg">
+                  <SheetHeader className="px-4 sm:px-6">
+                    <SheetTitle className="text-lg font-semibold">Tours à venir</SheetTitle>
+                    <SheetDescription className="text-sm">
+                      Tous vos gains et contributions prévus
+                    </SheetDescription>
+                  </SheetHeader>
+                  
+                  <div className="mt-4 sm:mt-6 px-4 sm:px-6">
+                    <Tabs defaultValue="gains" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="gains" className="text-sm">
+                          <Trophy className="w-4 h-4 mr-2" />
+                          Mes gains
+                        </TabsTrigger>
+                        <TabsTrigger value="contributions" className="text-sm">
+                          <Coins className="w-4 h-4 mr-2" />
+                          Contributions
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="gains" className="mt-3 sm:mt-4">
+                        <div className="space-y-2 max-h-[calc(100vh-280px)] sm:max-h-[calc(100vh-250px)] overflow-y-auto pr-1 sm:pr-2">
+                          {allGains.map((item, index) => (
+                            <div key={index} className="group relative">
+                              <div className="flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-green-50 to-green-25 border border-green-200 hover:border-green-300 hover:shadow-sm transition-all duration-200">
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors">
+                                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="text-xs sm:text-sm font-semibold text-green-900 truncate pr-1 sm:pr-2">
+                                      {item.name}
+                                    </h4>
+                                    <Badge 
+                                      className={`text-xs flex-shrink-0 px-1.5 sm:px-2 py-0.5 ${
+                                        item.status === "confirmed" 
+                                          ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
+                                          : "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
+                                      }`}
+                                    >
+                                      {item.status === "confirmed" ? "✓" : "⏳"}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center justify-between mt-0.5">
+                                    <div className="flex items-center text-xs text-green-700">
+                                      <Calendar className="w-3 h-3 mr-1" />
+                                      <span className="hidden sm:inline">Tour {item.tour} • </span>
+                                      <span className="sm:hidden">T{item.tour} • </span>
+                                      {item.date}
+                                    </div>
+                                    <div className="text-xs sm:text-sm font-bold text-green-800">
+                                      {item.amount.replace(' FCFA', '').replace(' ', 'K')} 
+                                      <span className="hidden sm:inline"> FCFA</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="contributions" className="mt-3 sm:mt-4">
+                        <div className="space-y-2 max-h-[calc(100vh-280px)] sm:max-h-[calc(100vh-250px)] overflow-y-auto pr-1 sm:pr-2">
+                          {allContributions.map((item, index) => (
+                            <div key={index} className="group relative">
+                              <div className="flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-blue-50 to-blue-25 border border-blue-200 hover:border-blue-300 hover:shadow-sm transition-all duration-200">
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
+                                  <Coins className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="text-xs sm:text-sm font-semibold text-blue-900 truncate pr-1 sm:pr-2">
+                                      {item.name}
+                                    </h4>
+                                    <Badge 
+                                      className={`text-xs flex-shrink-0 px-1.5 sm:px-2 py-0.5 ${
+                                        item.status === "confirmed" 
+                                          ? "bg-blue-500 hover:bg-blue-600 text-white border-blue-500" 
+                                          : "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
+                                      }`}
+                                    >
+                                      {item.status === "confirmed" ? "✓" : "⏳"}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center justify-between mt-0.5">
+                                    <div className="flex items-center text-xs text-blue-700">
+                                      <Calendar className="w-3 h-3 mr-1" />
+                                      <span className="hidden sm:inline">Tour {item.tour} • </span>
+                                      <span className="sm:hidden">T{item.tour} • </span>
+                                      {item.date}
+                                    </div>
+                                    <div className="text-xs sm:text-sm font-bold text-blue-800">
+                                      {item.amount.replace(' FCFA', '').replace(' ', 'K')} 
+                                      <span className="hidden sm:inline"> FCFA</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
           
           {/* Quick Actions */}
