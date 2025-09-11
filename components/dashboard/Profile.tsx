@@ -451,7 +451,7 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
 
       {/* Modal de sélection d'avatar */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
-        <DialogContent className="mx-auto sm:max-w-md max-w-[95vw] h-[90vh] sm:h-auto overflow-y-auto p-0">
+        <DialogContent className="mx-auto sm:max-w-md max-w-[92vw] max-h-[85vh] sm:h-auto overflow-y-auto p-0">
           <DialogHeader className="px-2 sm:px-6 pt-4">
             <DialogTitle className="flex items-center text-base sm:text-lg">
               <Camera className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
@@ -462,7 +462,7 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-3 sm:space-y-4 px-2 sm:px-6">
+          <div className="space-y-3 sm:space-y-4 px-2.5 sm:px-6">
             {/* Avatars prédéfinis */}
             <div>
               <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Avatars prédéfinis</Label>
@@ -557,8 +557,8 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
             {/* Prévisualisation */}
             <div>
               <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Prévisualisation</Label>
-              <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 border border-gray-200 rounded-lg bg-gray-50">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0">
+              <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
                   <img 
                     src={selectedAvatar} 
                     alt="Prévisualisation avatar"
@@ -566,8 +566,8 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">Jean Dupont</p>
-                  <p className="text-xs text-gray-500">Aperçu de votre profil</p>
+                  <p className="text-sm sm:text-base font-medium text-gray-900 truncate">Jean Dupont</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Aperçu de votre profil</p>
                 </div>
               </div>
             </div>
