@@ -23,7 +23,7 @@ export default function CompleteProfilePage() {
       </div>
       
       {/* Contenu scrollable par-dessus */}
-      <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-4 p-4 sm:p-6 md:p-10">
+      <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-4 px-3 py-4 sm:p-6 md:p-10">
         {/* Header avec progress et skip */}
         <div className="flex w-full max-w-2xl items-center justify-between mb-3 ">
           <div className="flex items-center gap-4">

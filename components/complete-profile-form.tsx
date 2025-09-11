@@ -20,16 +20,31 @@ import {
   Camera,
   FileText,
   UserCircle2,
-  Check
+  Check,
+  Users
 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Switch } from "@/components/ui/switch"
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const completeProfileSchema = z.object({
-  username: z.string().min(3, "Le pseudo doit contenir au moins 3 caractères").max(20, "Le pseudo ne peut pas dépasser 20 caractères"),
+  username: z.string()
+    .min(3, "Le pseudo doit contenir au moins 3 caractères")
+    .max(20, "Le pseudo ne peut pas dépasser 20 caractères")
+    .regex(/^[a-zA-Z0-9_]+$/, "Le pseudo ne peut contenir que des lettres, chiffres et underscore"),
+  gender: z.enum(["male", "female"], {
+    required_error: "Veuillez sélectionner votre sexe",
+  }),
   address: z.string().optional(),
   phone: z.string().optional(),
   profileImage: z.any().optional(),
@@ -58,20 +73,27 @@ export function CompleteProfileForm({
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null)
   const [identityDocument, setIdentityDocument] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [showUsernameByDefault, setShowUsernameByDefault] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
+    watch,
+    setValue,
   } = useForm<CompleteProfileFormData>({
     resolver: zodResolver(completeProfileSchema),
     mode: "onChange",
     defaultValues: {
       username: "",
+      gender: undefined,
       address: "",
       phone: "",
     },
   })
+
+  const username = watch("username")
 
   const handleProfileImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -100,6 +122,36 @@ export function CompleteProfileForm({
     setProfileImagePreview(null)
   }
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    
+    // Supprimer tous les caractères non numériques
+    const numbersOnly = value.replace(/\D/g, '')
+    
+    // Limiter à 10 chiffres maximum (01 + 8 chiffres)
+    const limitedNumbers = numbersOnly.slice(0, 10)
+    
+    // Assurer que ça commence par 01 si l'utilisateur tape quelque chose
+    if (limitedNumbers.length > 0) {
+      if (!limitedNumbers.startsWith('01')) {
+        // Si ça ne commence pas par 01, forcer 01 au début
+        if (limitedNumbers.length === 1 && limitedNumbers !== '0') {
+          setPhoneNumber('01' + limitedNumbers)
+        } else if (limitedNumbers.startsWith('0') && limitedNumbers.charAt(1) !== '1') {
+          setPhoneNumber('01' + limitedNumbers.slice(1))
+        } else if (!limitedNumbers.startsWith('0')) {
+          setPhoneNumber('01' + limitedNumbers)
+        } else {
+          setPhoneNumber(limitedNumbers)
+        }
+      } else {
+        setPhoneNumber(limitedNumbers)
+      }
+    } else {
+      setPhoneNumber('')
+    }
+  }
+
   const onSubmit = async (data: CompleteProfileFormData) => {
     setIsLoading(true)
     
@@ -108,7 +160,9 @@ export function CompleteProfileForm({
       ...data,
       avatar: selectedAvatar,
       customProfileImage,
-      identityDocument
+      identityDocument,
+      phone: phoneNumber ? `+229${phoneNumber}` : "",
+      showUsernameByDefault
     })
     
     // Simulate API call
@@ -121,22 +175,25 @@ export function CompleteProfileForm({
   }
 
   const currentProfileImage = profileImagePreview || selectedAvatar
+  
+  // Vérifier si le pseudo est valide (selon le schéma de validation)
+  const isUsernameValid = username && username.length >= 3 && username.length <= 20 && /^[a-zA-Z0-9_]+$/.test(username)
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="backdrop-blur-sm bg-white/98 dark:bg-gray-950/95 shadow-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center gap-3">
-            <UserCircle2 className="w-6 h-6 text-primary" />
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-lg sm:text-xl flex items-center gap-3">
+            <UserCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             Compléter votre profil
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             Ces informations nous aideront à personnaliser votre expérience et à sécuriser votre compte
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <form id="complete-profile-form" onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid gap-5">
+            <div className="grid gap-4 sm:gap-5">
               
               {/* Photo de profil section */}
               <div className="space-y-3">
@@ -168,7 +225,7 @@ export function CompleteProfileForm({
                     </div>
                     
                     {/* Avatars prédéfinis */}
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 justify-start">
                       {avatarOptions.map((avatar, index) => {
                         const borderColors = [
                           'border-blue-500', 'border-green-500', 'border-purple-500', 'border-orange-500',
@@ -211,7 +268,7 @@ export function CompleteProfileForm({
                     </div>
 
                     {/* Upload photo personnalisée - compact */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                       <Input
                         id="profile-image"
                         type="file"
@@ -221,13 +278,13 @@ export function CompleteProfileForm({
                       />
                       <Label
                         htmlFor="profile-image"
-                        className="flex items-center gap-2 cursor-pointer px-3 py-1.5 text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                        className="flex items-center gap-2 cursor-pointer px-3 py-1.5 text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-auto justify-center sm:justify-start"
                       >
                         <Camera className="w-3 h-3" />
                         Upload photo
                       </Label>
                       {customProfileImage && (
-                        <span className="text-xs text-muted-foreground truncate">
+                        <span className="text-xs text-muted-foreground truncate text-center sm:text-left">
                           {customProfileImage.name}
                         </span>
                       )}
@@ -236,29 +293,47 @@ export function CompleteProfileForm({
                 </div>
               </div>
 
-              {/* Pseudo */}
-              <div className="space-y-2">
-                <Label htmlFor="username">Pseudo *</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="votre_pseudo"
-                    className={cn("pl-10", errors.username && "border-red-500")}
-                    {...register("username")}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Votre pseudo sera visible par les autres membres des tontines
-                </p>
-                {errors.username && (
-                  <p className="text-sm text-red-600">{errors.username.message}</p>
-                )}
-              </div>
-
-              {/* Informations optionnelles */}
+              {/* Informations personnelles - Grid optimisé */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Pseudo */}
+                <div className="space-y-2">
+                  <Label htmlFor="username">Pseudo *</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="votre_pseudo"
+                      className={cn("pl-10", errors.username && "border-red-500")}
+                      {...register("username")}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Lettres, chiffres et _ (3-20 car.)
+                  </p>
+                  {errors.username && (
+                    <p className="text-xs text-red-600">{errors.username.message}</p>
+                  )}
+                </div>
+
+                {/* Sexe */}
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Sexe *</Label>
+                  <Select onValueChange={(value) => setValue("gender", value as "male" | "female")}>
+                    <SelectTrigger className={cn("pl-10", errors.gender && "border-red-500")}>
+                      <Users className="text-muted-foreground w-4 h-4" />
+                      <SelectValue placeholder="Sélectionnez" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Homme</SelectItem>
+                      <SelectItem value="female">Femme</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.gender && (
+                    <p className="text-xs text-red-600">{errors.gender.message}</p>
+                  )}
+                </div>
+
                 {/* Adresse */}
                 <div className="space-y-2">
                   <Label htmlFor="address">Adresse</Label>
@@ -266,34 +341,65 @@ export function CompleteProfileForm({
                     <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
                       id="address"
-                      placeholder="Votre adresse complète..."
+                      placeholder="Votre adresse..."
                       className="pl-10"
                       {...register("address")}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Optionnel - Utile pour les tontines locales
+                    Optionnel
                   </p>
                 </div>
 
                 {/* Téléphone */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Numéro de téléphone</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Label htmlFor="phone">Téléphone</Label>
+                  <div className="relative flex">
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <div className="flex items-center justify-center pl-10 pr-3 py-2 bg-gray-50 border border-r-0 rounded-l-md text-sm font-medium text-gray-700 h-10">
+                        +229
+                      </div>
+                    </div>
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="+225 XX XX XX XX XX"
-                      className="pl-10"
-                      {...register("phone")}
+                      placeholder="01 XX XX XX XX"
+                      className="rounded-l-none border-l-0 h-10 flex-1"
+                      value={phoneNumber}
+                      onChange={handlePhoneChange}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Optionnel - Pour les notifications importantes
+                    Optionnel - Format: 01XXXXXXXX
                   </p>
                 </div>
               </div>
+
+              {/* Switch pour afficher le pseudo par défaut - Plus compact */}
+              {isUsernameValid && (
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 p-3 sm:p-2 bg-green-50 border border-green-300 rounded-md">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3 h-3 text-green-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-green-800 break-words">
+                        Afficher "{username}" par défaut
+                      </p>
+                      <p className="text-xs text-green-600">
+                        Sinon le nom complet sera affiché
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end sm:justify-start">
+                    <Switch
+                      checked={showUsernameByDefault}
+                      onCheckedChange={setShowUsernameByDefault}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Document d'identité */}
               <div className="space-y-2">
