@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CreateTontineForm } from "@/components/dashboard/CreateTontineForm";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -376,7 +377,7 @@ export default function AdminPanel() {
                   <CardTitle className="text-lg">Validations en attente</CardTitle>
                   <CardDescription>Utilisateurs nécessitant une validation</CardDescription>
                 </CardHeader>
-                <CardContent className="px-4 md:px-6">
+                <CardContent className="px-3 sm:px-4 lg:px-6">
                   {/* Desktop Table */}
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full">
@@ -818,7 +819,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-4 md:px-6">
+              <CardContent className="px-3 sm:px-4 lg:px-6">
                 {/* Desktop Table */}
                 <div className="hidden lg:block">
                   <Table>
@@ -1014,23 +1015,29 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between pt-4 mt-6 border-t">
-                  <div className="text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-6 border-t gap-4">
+                  <div className="text-sm text-gray-600 text-center sm:text-left">
                     Affichage de 1 à 5 sur {stats.totalUsers.toLocaleString()} utilisateurs
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" disabled>
+                    <Button variant="outline" size="sm" disabled className="hidden sm:flex">
                       Précédent
+                    </Button>
+                    <Button variant="outline" size="sm" disabled className="sm:hidden w-8 h-8 p-0">
+                      ←
                     </Button>
                     <div className="flex items-center gap-1">
                       <Button variant="default" size="sm" className="w-8 h-8 p-0">1</Button>
-                      <Button variant="outline" size="sm" className="w-8 h-8 p-0">2</Button>
-                      <Button variant="outline" size="sm" className="w-8 h-8 p-0">3</Button>
-                      <span className="text-gray-400 px-2">...</span>
-                      <Button variant="outline" size="sm" className="w-8 h-8 p-0">42</Button>
+                      <Button variant="outline" size="sm" className="w-8 h-8 p-0 hidden sm:flex">2</Button>
+                      <Button variant="outline" size="sm" className="w-8 h-8 p-0 hidden sm:flex">3</Button>
+                      <span className="text-gray-400 px-2 hidden sm:inline">...</span>
+                      <Button variant="outline" size="sm" className="w-8 h-8 p-0 hidden sm:flex">42</Button>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="hidden sm:flex">
                       Suivant
+                    </Button>
+                    <Button variant="outline" size="sm" className="sm:hidden w-8 h-8 p-0">
+                      →
                     </Button>
                   </div>
                 </div>
@@ -1041,6 +1048,15 @@ export default function AdminPanel() {
 
         {activeTab === "tontines" && (
           <div className="space-y-6">
+            {/* Header with Create Button */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 font-poppins">Gestion des tontines</h2>
+                <p className="text-gray-600">Administrez toutes les tontines de la plateforme</p>
+              </div>
+              <CreateTontineForm />
+            </div>
+
             {/* Tontines Overview */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <Card className="p-4 rounded-md">
@@ -1086,28 +1102,28 @@ export default function AdminPanel() {
             {/* Tontines Table */}
             <Card>
               <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-4">
                   <div>
                     <CardTitle className="text-lg">Gestion des tontines</CardTitle>
                     <CardDescription>Liste de toutes les tontines créées sur la plateforme</CardDescription>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>Actives: {recentTontines.filter(t => t.status === 'active').length}</span>
+                      <span className="whitespace-nowrap">Actives: {recentTontines.filter(t => t.status === 'active').length}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                      <span>Terminées: {recentTontines.filter(t => t.status === 'completed').length}</span>
+                      <span className="whitespace-nowrap">Terminées: {recentTontines.filter(t => t.status === 'completed').length}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <span>En attente: {recentTontines.filter(t => t.status === 'pending').length}</span>
+                      <span className="whitespace-nowrap">En attente: {recentTontines.filter(t => t.status === 'pending').length}</span>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-4 md:px-6">
+              <CardContent className="px-3 sm:px-4 lg:px-6">
                 {/* Desktop Table */}
                 <div className="hidden lg:block">
                   <Table>
@@ -1337,23 +1353,29 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between pt-4 mt-6 border-t">
-                  <div className="text-sm text-gray-600">
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-4 mt-6 border-t gap-4">
+                  <div className="text-sm text-gray-600 text-center sm:text-left">
                     Affichage de 1 à 4 sur {stats.totalTontines} tontines
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" disabled>
+                    <Button variant="outline" size="sm" disabled className="hidden sm:flex">
                       Précédent
+                    </Button>
+                    <Button variant="outline" size="sm" disabled className="sm:hidden w-8 h-8 p-0">
+                      ←
                     </Button>
                     <div className="flex items-center gap-1">
                       <Button variant="default" size="sm" className="w-8 h-8 p-0">1</Button>
-                      <Button variant="outline" size="sm" className="w-8 h-8 p-0">2</Button>
-                      <Button variant="outline" size="sm" className="w-8 h-8 p-0">3</Button>
-                      <span className="text-gray-400 px-2">...</span>
-                      <Button variant="outline" size="sm" className="w-8 h-8 p-0">8</Button>
+                      <Button variant="outline" size="sm" className="w-8 h-8 p-0 hidden sm:flex">2</Button>
+                      <Button variant="outline" size="sm" className="w-8 h-8 p-0 hidden sm:flex">3</Button>
+                      <span className="text-gray-400 px-2 hidden sm:inline">...</span>
+                      <Button variant="outline" size="sm" className="w-8 h-8 p-0 hidden sm:flex">8</Button>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="hidden sm:flex">
                       Suivant
+                    </Button>
+                    <Button variant="outline" size="sm" className="sm:hidden w-8 h-8 p-0">
+                      →
                     </Button>
                   </div>
                 </div>
@@ -1422,28 +1444,28 @@ export default function AdminPanel() {
             {/* Transactions Table */}
             <Card>
               <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-4">
                   <div>
                     <CardTitle className="text-lg">Gestion des transactions</CardTitle>
                     <CardDescription>Historique complet des paiements et retraits</CardDescription>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>Terminées: {recentTransactions.filter(t => t.status === 'completed').length}</span>
+                      <span className="whitespace-nowrap">Terminées: {recentTransactions.filter(t => t.status === 'completed').length}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                      <span>En attente: {recentTransactions.filter(t => t.status === 'pending').length}</span>
+                      <span className="whitespace-nowrap">En attente: {recentTransactions.filter(t => t.status === 'pending').length}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <span>Échecs: {recentTransactions.filter(t => t.status === 'failed').length}</span>
+                      <span className="whitespace-nowrap">Échecs: {recentTransactions.filter(t => t.status === 'failed').length}</span>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="px-4 md:px-6">
+              <CardContent className="px-3 sm:px-4 lg:px-6">
                 {/* Desktop Table */}
                 <div className="hidden lg:block">
                   <Table>
@@ -1652,11 +1674,11 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between pt-6 border-t">
-                  <div className="text-sm text-gray-500">
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t gap-4">
+                  <div className="text-sm text-gray-500 text-center sm:text-left">
                     Affichage de 1 à {recentTransactions.length} sur {recentTransactions.length} transactions
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
                     Charger plus de transactions
                   </Button>
                 </div>
