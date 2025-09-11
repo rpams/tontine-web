@@ -53,11 +53,33 @@ import {
   Bell,
   ArrowUpRight,
   TrendingUp,
-  Crown
+  Crown,
+  Share2
 } from "lucide-react";
 
 export default function TontineDetail() {
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/tontines?code=FAMILLE2024`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Tontine Famille',
+          text: 'Rejoignez ma tontine familiale !',
+          url: shareUrl,
+        });
+      } catch (error) {
+        // Fallback to clipboard if sharing is cancelled
+        navigator.clipboard.writeText(shareUrl);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      navigator.clipboard.writeText(shareUrl);
+      // You could show a toast notification here
+    }
+  };
 
   return (
     <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
@@ -180,8 +202,18 @@ export default function TontineDetail() {
               <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-xs">
                 En cours
               </Badge>
-              <Button variant="outline" size="sm" className="w-8 h-8 p-0 sm:w-auto sm:h-auto sm:p-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-8 h-8 p-0 sm:w-auto sm:h-auto sm:p-2 cursor-pointer"
+                onClick={handleShare}
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline sm:ml-2">Partager</span>
+              </Button>
+              <Button variant="outline" size="sm" className="w-8 h-8 p-0 sm:w-auto sm:h-auto sm:p-2 cursor-pointer">
                 <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline sm:ml-2">Paramètres</span>
               </Button>
             </div>
           </div>
@@ -238,120 +270,159 @@ export default function TontineDetail() {
           </div>
         </div>
 
+        {/* Prochain gagnant - Mobile/Tablet uniquement */}
+        <div className="lg:hidden mb-6">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Crown className="w-4 h-4 text-amber-600" />
+              <h3 className="text-sm font-medium text-amber-800">Prochain gagnant</h3>
+            </div>
+            <div className="relative flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 p-3 sm:p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200 shadow-sm">
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-100/20 to-yellow-100/20 rounded-lg"></div>
+              <div className="relative flex items-center space-x-3 flex-1">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
+                <div className="relative flex-1">
+                  <div className="font-semibold text-amber-900 text-sm">Marie Dubois</div>
+                  <div className="text-xs text-amber-700">Tour 4 • Dans 2 jours</div>
+                </div>
+              </div>
+              <div className="relative text-left sm:text-right">
+                <div className="text-sm font-bold text-amber-800">85 000 FCFA</div>
+                <div className="text-xs text-amber-600">À recevoir</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Main Content Tabs */}
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 lg:flex-[2]">
             <Tabs defaultValue="tours" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
-                <TabsTrigger value="tours" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-12 sm:p-1 border p-2">
+                <TabsTrigger value="tours" className="flex-col sm:flex-row p-2 sm:p-3 h-auto sm:h-10 sm:rounded-md">
                   <Trophy className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
-                  <span className="text-xs sm:text-sm">Tours</span>
+                  <span className="text-xs sm:text-sm sm:font-medium">Tours</span>
                 </TabsTrigger>
-                <TabsTrigger value="participants" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+                <TabsTrigger value="participants" className="flex-col sm:flex-row p-2 sm:p-3 h-auto sm:h-10 sm:rounded-md">
                   <Users className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
-                  <span className="text-xs sm:text-sm">Participants</span>
+                  <span className="text-xs sm:text-sm sm:font-medium">Participants</span>
                 </TabsTrigger>
-                <TabsTrigger value="ordre" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+                <TabsTrigger value="ordre" className="flex-col sm:flex-row p-2 sm:p-3 h-auto sm:h-10 sm:rounded-md">
                   <Crown className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
-                  <span className="text-xs sm:text-sm hidden sm:inline">Ordre des gagnants</span>
+                  <span className="text-xs sm:text-sm sm:font-medium hidden sm:inline">Ordre des gagnants</span>
                   <span className="text-xs sm:hidden">Ordre</span>
                 </TabsTrigger>
-                <TabsTrigger value="historique" className="flex-col sm:flex-row p-2 sm:p-3 h-auto">
+                <TabsTrigger value="historique" className="flex-col sm:flex-row p-2 sm:p-3 h-auto sm:h-10 sm:rounded-md">
                   <History className="w-4 h-4 sm:mr-2 mb-1 sm:mb-0" />
-                  <span className="text-xs sm:text-sm">Historique</span>
+                  <span className="text-xs sm:text-sm sm:font-medium">Historique</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tours" className="mt-6">
-                <div className="space-y-4">
-                  {/* Tour Item */}
-                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Trophy className="w-4 h-4 text-green-600" />
+                <div className="space-y-3">
+                  {/* Tour Item À Venir - Highlighted */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border-2 border-blue-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Trophy className="w-4 h-4 text-white" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-medium text-gray-900 font-poppins">Tour 4</h4>
-                          <p className="text-xs text-gray-500">Prochain tour</p>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-gray-900 font-poppins">Tour 4</h4>
+                            <Badge className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5">À venir</Badge>
+                          </div>
+                          <p className="text-sm text-blue-700 font-medium mb-1">Prochain tour • Marie Dubois</p>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
+                            <div className="flex items-center text-blue-600">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              <span>Dans 2 jours (12 Sept 2024)</span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <Clock className="w-3 h-3 mr-1" />
+                              <span>Tirage automatique</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end sm:space-x-2">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-                          À venir
-                        </Badge>
-                        <span className="text-sm font-medium">85 000 FCFA</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-xs text-gray-500 mt-3">
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        <span className="hidden sm:inline">Dans 2 jours (12 Sept 2024)</span>
-                        <span className="sm:hidden">12 Sept 2024</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        Tirage automatique
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900 font-poppins">Tour 3</h4>
-                          <p className="text-xs text-gray-500">Gagnant: Marie Dupont</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Complété
-                        </Badge>
-                        <span className="text-sm font-medium">85 000 FCFA</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        5 Sept 2024
-                      </div>
-                      <div className="flex items-center">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Paiements reçus: 12/12
+                      <div className="text-right">
+                        <div className="font-bold text-blue-800">85 000 FCFA</div>
+                        <div className="text-xs text-blue-600">Montant du tour</div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  {/* Tours Complétés */}
+                  <div className="bg-white p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           <CheckCircle className="w-4 h-4 text-green-600" />
                         </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900 font-poppins">Tour 2</h4>
-                          <p className="text-xs text-gray-500">Gagnant: Jean Martin</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-gray-900 font-poppins">Tour 3</h4>
+                            <Badge className="bg-green-100 text-green-800 text-xs px-2 py-0.5">Complété</Badge>
+                          </div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Avatar className="h-5 w-5">
+                              <AvatarFallback className="text-xs bg-green-50 text-green-700">MD</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm text-gray-700">Gagnant: Marie Dupont</span>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
+                            <div className="flex items-center text-gray-600">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              <span>5 Sept 2024</span>
+                            </div>
+                            <div className="flex items-center text-green-600">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              <span>Paiements reçus: 12/12</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Complété
-                        </Badge>
-                        <span className="text-sm font-medium">85 000 FCFA</span>
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900">85 000 FCFA</div>
+                        <div className="text-xs text-gray-500">Montant versé</div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        29 août 2024
+                  </div>
+
+                  <div className="bg-white p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-gray-900 font-poppins">Tour 2</h4>
+                            <Badge className="bg-green-100 text-green-800 text-xs px-2 py-0.5">Complété</Badge>
+                          </div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Avatar className="h-5 w-5">
+                              <AvatarFallback className="text-xs bg-green-50 text-green-700">JM</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm text-gray-700">Gagnant: Jean Martin</span>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
+                            <div className="flex items-center text-gray-600">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              <span>29 août 2024</span>
+                            </div>
+                            <div className="flex items-center text-green-600">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              <span>Paiements reçus: 12/12</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Paiements reçus: 12/12
+                      <div className="text-right">
+                        <div className="font-bold text-gray-900">85 000 FCFA</div>
+                        <div className="text-xs text-gray-500">Montant versé</div>
                       </div>
                     </div>
                   </div>
@@ -360,69 +431,95 @@ export default function TontineDetail() {
 
               <TabsContent value="participants" className="mt-6">
                 <div className="space-y-3">
-                  {/* Participant Item */}
-                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="flex items-center space-x-3 flex-1">
-                        <Avatar className="flex-shrink-0">
-                          <AvatarFallback>JD</AvatarFallback>
+                  {/* Participant Créateur - Highlighted */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-2.5 sm:p-3 rounded-lg border-2 border-blue-200">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+                      <div className="flex items-center space-x-2.5 sm:space-x-3">
+                        <div className="relative">
+                          <Avatar className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
+                            <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold text-xs sm:text-sm">JD</AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <Crown className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">John Doe</h4>
+                              <Badge className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 sm:px-2">Vous</Badge>
+                            </div>
+                            <p className="text-xs sm:text-sm text-blue-700">Créateur • 3/3 paiements</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
+                        <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300 text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 w-fit hover:shadow-sm transition-all duration-300 animate-pulse">À jour ✨</Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Autres participants */}
+                  <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-gray-200">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+                      <div className="flex items-center space-x-2.5 sm:space-x-3">
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                          <AvatarFallback className="bg-yellow-100 text-yellow-700 text-xs sm:text-sm">MD</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-medium text-gray-900 truncate">John Doe (Vous)</h4>
-                          <p className="text-xs text-gray-500">Créateur • Rejoint le 15 août 2024</p>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">Marie Dupont</h4>
+                              <Badge className="bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 sm:px-2 w-fit">Gagnante T3</Badge>
+                            </div>
+                            <p className="text-xs sm:text-sm text-gray-600">3/3 paiements</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-                          Créateur
-                        </Badge>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                          À jour
-                        </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
+                        <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300 text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 w-fit hover:shadow-sm transition-all duration-300 animate-pulse">À jour ✨</Badge>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          <AvatarFallback>MD</AvatarFallback>
+                  <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-gray-200">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+                      <div className="flex items-center space-x-2.5 sm:space-x-3">
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                          <AvatarFallback className="bg-orange-100 text-orange-700 text-xs sm:text-sm">JM</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <h4 className="font-medium text-gray-900">Marie Dupont</h4>
-                          <p className="text-xs text-gray-500">Rejoint le 16 août 2024</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">Jean Martin</h4>
+                              <Badge className="bg-orange-100 text-orange-800 text-xs px-1.5 py-0.5 sm:px-2 w-fit">Gagnant T2</Badge>
+                            </div>
+                            <p className="text-xs sm:text-sm text-gray-600">2/3 paiements</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                          Gagnante T3
-                        </Badge>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          À jour
-                        </Badge>
-                      </div>
+                      <Badge className="bg-red-100 text-red-800 text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 w-fit">En retard</Badge>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          <AvatarFallback>JM</AvatarFallback>
+                  <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-gray-200">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+                      <div className="flex items-center space-x-2.5 sm:space-x-3">
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                          <AvatarFallback className="bg-gray-100 text-gray-700 text-xs sm:text-sm">SB</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <h4 className="font-medium text-gray-900">Jean Martin</h4>
-                          <p className="text-xs text-gray-500">Rejoint le 17 août 2024</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">Sophie Bernard</h4>
+                            <p className="text-xs sm:text-sm text-gray-600">3/3 paiements</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                          Gagnant T2
-                        </Badge>
-                        <Badge variant="secondary" className="bg-red-100 text-red-800">
-                          Retard
-                        </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm"></div>
+                        <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-300 text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 w-fit hover:shadow-sm transition-all duration-300 animate-pulse">À jour ✨</Badge>
                       </div>
                     </div>
                   </div>
@@ -513,42 +610,83 @@ export default function TontineDetail() {
 
               <TabsContent value="historique" className="mt-6">
                 <div className="space-y-3">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Trophy className="w-4 h-4 text-green-600" />
+                  {/* Événement Récent - Highlighted */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border-2 border-green-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Trophy className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-gray-900">Tour 3 terminé</h4>
+                            <Badge className="bg-green-100 text-green-800 text-xs px-2 py-0.5">Récent</Badge>
+                          </div>
+                          <p className="text-sm text-green-700">Marie Dupont • 85 000 FCFA</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">Tour 3 terminé</h4>
-                        <p className="text-sm text-gray-600">Marie Dupont a remporté 85 000 FCFA</p>
-                        <p className="text-xs text-gray-500">5 septembre 2024 • 14:30</p>
-                      </div>
+                      <span className="text-xs text-gray-500">5 Sept</span>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Coins className="w-4 h-4 text-blue-600" />
+                  {/* Autres événements */}
+                  <div className="bg-white p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Coins className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-gray-900">Paiement reçu</h4>
+                          <p className="text-sm text-gray-600">Jean Martin • 85 000 FCFA</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">Paiement reçu</h4>
-                        <p className="text-sm text-gray-600">Jean Martin a payé 85 000 FCFA pour le Tour 3</p>
-                        <p className="text-xs text-gray-500">4 septembre 2024 • 09:15</p>
-                      </div>
+                      <span className="text-xs text-gray-500">4 Sept</span>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Users className="w-4 h-4 text-purple-600" />
+                  <div className="bg-white p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Users className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-gray-900">Nouveau participant</h4>
+                          <p className="text-sm text-gray-600">Sophie Bernard a rejoint</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">Nouveau participant</h4>
-                        <p className="text-sm text-gray-600">Sophie Bernard a rejoint la tontine</p>
-                        <p className="text-xs text-gray-500">20 août 2024 • 16:45</p>
+                      <span className="text-xs text-gray-500">20 Août</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Trophy className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-gray-900">Tour 2 terminé</h4>
+                          <p className="text-sm text-gray-600">Jean Martin • 85 000 FCFA</p>
+                        </div>
                       </div>
+                      <span className="text-xs text-gray-500">29 Août</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Settings className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-gray-900">Tontine créée</h4>
+                          <p className="text-sm text-gray-600">John Doe (créateur)</p>
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-500">15 Août</span>
                     </div>
                   </div>
                 </div>
@@ -560,8 +698,8 @@ export default function TontineDetail() {
 
           {/* Right Column - Actions */}
           <div className="flex-1 space-y-6">
-            {/* Prochain gagnant */}
-            <div className="space-y-3">
+            {/* Prochain gagnant - Desktop uniquement */}
+            <div className="hidden lg:block space-y-3">
               <div className="flex items-center space-x-2">
                 <Crown className="w-4 h-4 text-amber-600" />
                 <h3 className="text-sm font-medium text-amber-800">Prochain gagnant</h3>
@@ -595,92 +733,82 @@ export default function TontineDetail() {
                       Effectuer un paiement
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-                    {/* Header avec dégradé */}
-                    <div className="bg-gradient-to-br from-blue-600 to-purple-700 p-6 text-white">
-                      <div className="flex items-center justify-between">
+                  <DialogContent className="sm:max-w-md p-4">
+                    {/* Header */}
+                    <div className="text-center mb-4">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <Coins className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <h2 className="text-base font-semibold text-gray-900 mb-0.5">Effectuer un paiement</h2>
+                      <p className="text-sm text-gray-600">Tour 4 • Tontine Famille</p>
+                    </div>
+
+                    {/* Montant */}
+                    <div className="bg-blue-50 rounded-lg p-3 mb-4 border border-blue-200">
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-blue-900">85 000 FCFA</div>
+                        <div className="text-xs text-blue-700">Montant à payer</div>
+                      </div>
+                    </div>
+
+                    {/* Informations utilisateur */}
+                    <div className="bg-gray-50 rounded-lg p-2.5 mb-4 border">
+                      <div className="flex items-center space-x-2.5">
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className="bg-gray-200 text-gray-700 text-xs">JD</AvatarFallback>
+                        </Avatar>
                         <div>
-                          <h2 className="text-xl font-semibold mb-1">Effectuer un paiement</h2>
-                          <p className="text-blue-100 text-sm">Tontine Famille</p>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold">85 000</div>
-                          <div className="text-blue-100 text-sm">FCFA</div>
+                          <div className="font-medium text-gray-900 text-sm">Jean Dupont</div>
+                          <div className="text-xs text-gray-600">Échéance: 12 Sept 2024</div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-6">
-                      {/* Informations de paiement */}
-                      <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback className="bg-blue-100 text-blue-600">JD</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium text-gray-900">Jean Dupont</div>
-                            <div className="text-sm text-gray-500">jean.dupont@email.com</div>
-                          </div>
+                    {/* Méthodes de paiement */}
+                    <div className="space-y-2 mb-4">
+                      <h3 className="text-sm font-medium text-gray-900 mb-2">Méthode de paiement</h3>
+                      
+                      <div 
+                        className="flex items-center p-2.5 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-all"
+                        onClick={() => {
+                          console.log('Paiement KkiaPay');
+                        }}
+                      >
+                        <img src="/images/kkiapay.png" alt="KkiaPay" className="h-5 w-auto mr-2.5" />
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900 text-sm">KkiaPay</div>
+                          <div className="text-xs text-gray-600">Mobile Money, Cartes</div>
                         </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <div className="text-gray-500">Tour</div>
-                            <div className="font-medium">Tour 4</div>
-                          </div>
-                          <div>
-                            <div className="text-gray-500">Échéance</div>
-                            <div className="font-medium">12 Sept 2024</div>
-                          </div>
-                        </div>
+                        <div className="w-3 h-3 border-2 border-blue-400 rounded-full bg-blue-100"></div>
                       </div>
+                      
+                      <div 
+                        className="flex items-center p-2.5 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all"
+                        onClick={() => {
+                          console.log('Paiement FedaPay');
+                        }}
+                      >
+                        <img src="/images/fedapay.png" alt="FedaPay" className="h-5 w-auto mr-2.5" />
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900 text-sm">FedaPay</div>
+                          <div className="text-xs text-gray-600">Mobile Money, Cartes</div>
+                        </div>
+                        <div className="w-3 h-3 border-2 border-gray-300 rounded-full"></div>
+                      </div>
+                    </div>
 
-                      {/* Méthodes de paiement */}
-                      <div className="space-y-3">
-                        <div className="text-sm font-medium text-gray-700 mb-3">Choisir une méthode de paiement</div>
-                        
-                        <div 
-                          className="flex items-center p-4 border-2 border-orange-200 rounded-lg hover:border-orange-300 cursor-pointer transition-colors bg-orange-50/30"
-                          onClick={() => {
-                            console.log('Paiement KkiaPay');
-                          }}
-                        >
-                          <img src="/images/kkiapay.png" alt="KkiaPay" className="h-8 w-auto mr-4" />
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900">KkiaPay</div>
-                            <div className="text-sm text-gray-500">Mobile Money • Cartes bancaires</div>
-                          </div>
-                          <div className="w-4 h-4 border-2 border-orange-400 rounded-full"></div>
-                        </div>
-                        
-                        <div 
-                          className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 cursor-pointer transition-colors"
-                          onClick={() => {
-                            console.log('Paiement FedaPay');
-                          }}
-                        >
-                          <img src="/images/fedapay.png" alt="FedaPay" className="h-8 w-auto mr-4" />
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900">FedaPay</div>
-                            <div className="text-sm text-gray-500">Mobile Money • Cartes bancaires</div>
-                          </div>
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex space-x-3 mt-6">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setIsPaymentDialogOpen(false)} 
-                          className="flex-1"
-                        >
-                          Annuler
-                        </Button>
-                        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                          Continuer
-                        </Button>
-                      </div>
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsPaymentDialogOpen(false)} 
+                        className="flex-1"
+                      >
+                        Annuler
+                      </Button>
+                      <Button className="flex-1">
+                        Continuer
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
