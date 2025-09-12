@@ -171,7 +171,7 @@ export function CreateTontineForm() {
           Créer une tontine
         </Button>
       </DialogTrigger>
-      <DialogContent className="!max-w-4xl w-[95vw] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="!max-w-4xl w-[95vw] max-h-[90vh] md:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="relative pb-4 sm:pb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center space-x-3">
