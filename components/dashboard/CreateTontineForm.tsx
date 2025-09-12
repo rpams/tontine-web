@@ -171,7 +171,7 @@ export function CreateTontineForm() {
           Créer une tontine
         </Button>
       </DialogTrigger>
-      <DialogContent className="!max-w-4xl w-[95vw] max-h-[90vh] md:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="!max-w-4xl w-[95vw] max-h-[85vh] md:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="relative pb-4 sm:pb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center space-x-3">
@@ -179,10 +179,10 @@ export function CreateTontineForm() {
                 <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
               </div>
               <div>
-                <DialogTitle className="text-lg sm:text-xl font-bold text-gray-900">
+                <DialogTitle className="text-lg sm:text-xl font-bold text-start text-gray-900">
                   Nouvelle Tontine
                 </DialogTitle>
-                <DialogDescription className="text-sm sm:text-base text-gray-600">
+                <DialogDescription className="text-sm sm:text-base text-start text-gray-600">
                   Créez votre tontine en quelques étapes simples
                 </DialogDescription>
               </div>
@@ -535,6 +535,7 @@ export function CreateTontineForm() {
                     </div>
                     <Switch
                       checked={watchAllowMultipleShares}
+                      className="data-[state=checked]:bg-emerald-600"
                       onCheckedChange={(checked) => setValue("allowMultipleShares", checked)}
                     />
                   </div>
