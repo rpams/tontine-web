@@ -356,55 +356,55 @@ export default function AdminPanel() {
         {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card className="p-4 rounded-md">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Utilisateurs totaux</p>
-                    <p className="text-xl font-bold">{stats.totalUsers.toLocaleString()}</p>
-                    <p className="text-xs text-green-600">+{stats.newUsersThisWeek} cette semaine</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Utilisateurs totaux</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.totalUsers.toLocaleString()}</p>
+                    <p className="text-xs text-green-600 truncate">+{stats.newUsersThisWeek} cette semaine</p>
                   </div>
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Users className="h-4 w-4 text-blue-600" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Tontines actives</p>
-                    <p className="text-xl font-bold">{stats.activeTontines}</p>
-                    <p className="text-xs text-gray-500">sur {stats.totalTontines} au total</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Tontines actives</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.activeTontines}</p>
+                    <p className="text-xs text-gray-500 truncate">sur {stats.totalTontines} au total</p>
                   </div>
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-green-600" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Transactions</p>
-                    <p className="text-xl font-bold">{stats.totalTransactions.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">Volume total traité</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Transactions</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.totalTransactions.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 truncate">Volume total traité</p>
                   </div>
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <CreditCard className="h-4 w-4 text-purple-600" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Revenus totaux (CFA)</p>
-                    <p className="text-xl font-bold">{stats.totalRevenue}</p>
-                    <p className="text-xs text-gray-500">Depuis le lancement</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Revenus totaux (CFA)</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.totalRevenue}</p>
+                    <p className="text-xs text-gray-500 truncate">Depuis le lancement</p>
                   </div>
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <DollarSign className="h-4 w-4 text-orange-600" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
                   </div>
                 </div>
               </Card>
@@ -799,36 +799,40 @@ export default function AdminPanel() {
         {activeTab === "users" && (
           <div className="space-y-6">
             {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="flex items-center space-x-4 w-full sm:w-auto">
-                <div className="relative flex-1 sm:flex-initial bg-white">
+            <div className="space-y-4">
+              {/* Search et Filter - première ligne */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1 bg-white">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Rechercher un utilisateur..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 w-full sm:w-80"
+                    className="pl-9 w-full"
                   />
                 </div>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-full sm:w-40 bg-white">
-                    <SelectValue placeholder="Statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="active">Actifs</SelectItem>
-                    <SelectItem value="pending">En attente</SelectItem>
-                    <SelectItem value="suspended">Suspendus</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="flex-1 sm:w-40 bg-white">
+                      <SelectValue placeholder="Statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous</SelectItem>
+                      <SelectItem value="active">Actifs</SelectItem>
+                      <SelectItem value="pending">En attente</SelectItem>
+                      <SelectItem value="suspended">Suspendus</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" className="flex-shrink-0 px-3">
+                    <Download className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Exporter</span>
+                  </Button>
+                </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Button variant="outline">
-                  <Download className="w-4 h-4 mr-2" />
-                  Exporter
-                </Button>
-                <Button>
+              {/* Actions - deuxième ligne */}
+              <div className="flex justify-end">
+                <Button className="w-full sm:w-auto">
                   <UserPlus className="w-4 h-4 mr-2" />
                   Nouvel utilisateur
                 </Button>
@@ -996,9 +1000,9 @@ export default function AdminPanel() {
                           <div>
                             <div className="flex items-center gap-2">
                               <h4 className="font-semibold text-gray-900">{user.name}</h4>
-                              {user.status === 'active' && (
+                              {/* {user.status === 'active' && (
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                              )}
+                              )} */}
                             </div>
                             <p className="text-sm text-gray-600">{user.email}</p>
                             <p className="text-xs text-gray-500 mt-1">
@@ -1030,9 +1034,9 @@ export default function AdminPanel() {
                             ) : (
                               <XCircle className="w-3 h-3 text-red-600" />
                             )}
-                            <span className={user.verified ? 'text-green-700' : 'text-red-700'}>
+                            {/* <span className={user.verified ? 'text-green-700' : 'text-red-700'}>
                               {user.verified ? 'Vérifié' : 'Non vérifié'}
-                            </span>
+                            </span> */}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1098,41 +1102,41 @@ export default function AdminPanel() {
             </div>
 
             {/* Tontines Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <Card className="p-4 rounded-md">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Tontines actives</p>
-                    <p className="text-xl font-bold">{stats.activeTontines}</p>
-                    <p className="text-xs text-gray-500">Cycles en cours</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Tontines actives</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.activeTontines}</p>
+                    <p className="text-xs text-gray-500 truncate">Cycles en cours</p>
                   </div>
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
                 </div>
               </Card>
               
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">En attente</p>
-                    <p className="text-xl font-bold">12</p>
-                    <p className="text-xs text-gray-500">Validation nécessaire</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">En attente</p>
+                    <p className="text-lg sm:text-xl font-bold">12</p>
+                    <p className="text-xs text-gray-500 truncate">Validation nécessaire</p>
                   </div>
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <Clock className="h-4 w-4 text-orange-600" />
                   </div>
                 </div>
               </Card>
               
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md col-span-2 sm:col-span-1">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Terminées</p>
-                    <p className="text-xl font-bold">55</p>
-                    <p className="text-xs text-gray-500">Cycles complétés</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Terminées</p>
+                    <p className="text-lg sm:text-xl font-bold">55</p>
+                    <p className="text-xs text-gray-500 truncate">Cycles complétés</p>
                   </div>
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <CheckCircle className="h-4 w-4 text-blue-600" />
                   </div>
                 </div>
@@ -1300,8 +1304,8 @@ export default function AdminPanel() {
                     <div key={tontine.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Calendar className="w-6 h-6 text-blue-600" />
+                          <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
@@ -1375,14 +1379,14 @@ export default function AdminPanel() {
                               </div>
                             )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50">
                               <Eye className="w-4 h-4 text-blue-600" />
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-50">
                               <Edit className="w-4 h-4 text-gray-600" />
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-50">
                               <MoreHorizontal className="w-4 h-4 text-gray-600" />
                             </Button>
                           </div>
@@ -1427,54 +1431,54 @@ export default function AdminPanel() {
         {activeTab === "payments" && (
           <div className="space-y-6">
             {/* Payment Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card className="p-4 rounded-md">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Transactions aujourd'hui</p>
-                    <p className="text-xl font-bold">127</p>
-                    <p className="text-xs text-green-600">+12% vs hier</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Transactions aujourd'hui</p>
+                    <p className="text-lg sm:text-xl font-bold">127</p>
+                    <p className="text-xs text-green-600 truncate">+12% vs hier</p>
                   </div>
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <CreditCard className="h-4 w-4 text-blue-600" />
                   </div>
                 </div>
               </Card>
               
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Volume du jour</p>
-                    <p className="text-xl font-bold">847,000</p>
-                    <p className="text-xs text-gray-500">FCFA</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Volume du jour</p>
+                    <p className="text-lg sm:text-xl font-bold">847,000</p>
+                    <p className="text-xs text-gray-500 truncate">FCFA</p>
                   </div>
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <DollarSign className="h-4 w-4 text-green-600" />
                   </div>
                 </div>
               </Card>
               
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">En attente</p>
-                    <p className="text-xl font-bold">8</p>
-                    <p className="text-xs text-gray-500">Validation requise</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">En attente</p>
+                    <p className="text-lg sm:text-xl font-bold">8</p>
+                    <p className="text-xs text-gray-500 truncate">Validation requise</p>
                   </div>
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <Clock className="h-4 w-4 text-orange-600" />
                   </div>
                 </div>
               </Card>
               
-              <Card className="p-4 rounded-md">
+              <Card className="p-3 sm:p-4 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Taux d'échec</p>
-                    <p className="text-xl font-bold">2.1%</p>
-                    <p className="text-xs text-red-600">-0.3% vs hier</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-gray-600 truncate">Taux d'échec</p>
+                    <p className="text-lg sm:text-xl font-bold">2.1%</p>
+                    <p className="text-xs text-red-600 truncate">-0.3% vs hier</p>
                   </div>
-                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <AlertTriangle className="h-4 w-4 text-red-600" />
                   </div>
                 </div>
@@ -1622,7 +1626,7 @@ export default function AdminPanel() {
                 {/* Mobile Cards */}
                 <div className="lg:hidden space-y-3">
                   {recentTransactions.map((transaction) => (
-                    <Card key={transaction.id} className="p-4 border hover:shadow-sm transition-shadow">
+                    <Card key={transaction.id} className="p-4 rounded-md border hover:shadow-sm transition-shadow">
                       <div className="space-y-3">
                         {/* Header */}
                         <div className="flex items-start justify-between">
