@@ -151,7 +151,7 @@ export default function Home() {
                 <img
                   src="/images/logo.png"
                   alt="Logo Tontine"
-                  className="w-10 h-8 sm:w-12 sm:h-10 object-contain"
+                  className="h-6 sm:h-8 w-auto"
                 />
               </div>
               <div className="hidden xs:block">
@@ -247,16 +247,16 @@ export default function Home() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <a
-                href="/register"
+                href="/tontines"
                 className="bg-blue-600 text-white px-4 py-3 sm:px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm text-center text-sm sm:text-base"
               >
-                Démarrer mon épargne
+                Rejoindre une tontine
               </a>
               <a
-                href="/tontines"
+                href="/dashboard"
                 className="bg-white border border-gray-300 text-gray-700 px-4 py-3 sm:px-6 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-400 transition-colors text-center text-sm sm:text-base"
               >
-                Découvrir les tontines
+                Accéder à mon espace
               </a>
             </div>
           </div>
