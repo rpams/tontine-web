@@ -186,60 +186,74 @@ function TontineContent() {
                     <span className="font-medium">Rejoindre une tontine</span>
                   </Button>
                 </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md bg-white border-2 border-blue-100 shadow-xl">
                   {!isSuccess ? (
                     <>
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center">
-                          <Key className="w-5 h-5 mr-2 text-blue-600" />
-                          Code d'invitation
+                      <DialogHeader className="pb-4">
+                        <DialogTitle className="text-xl font-bold text-gray-900 font-poppins text-left mb-4">
+                          Rejoindre une tontine
                         </DialogTitle>
-                        <DialogDescription>
-                          Entrez le code d'invitation que vous avez reçu
-                        </DialogDescription>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                            <Key className="w-6 h-6 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 mb-1">Code d'invitation requis</h3>
+                            <p className="text-sm text-gray-600">
+                              Entrez le code d'invitation que vous avez reçu pour rejoindre la tontine
+                            </p>
+                          </div>
+                        </div>
                       </DialogHeader>
-                      <div className="space-y-4">
+                      <div className="space-y-4 py-2">
                         <div>
-                          <Input
-                            placeholder="Ex: FAMILLE2024"
-                            value={inviteCode}
-                            onChange={(e) => {
-                              setInviteCode(e.target.value);
-                              setError("");
-                            }}
-                            onKeyPress={handleKeyPress}
-                            className={`text-center font-mono text-lg tracking-wider uppercase ${
-                              error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
-                            }`}
-                            maxLength={20}
-                          />
+                          <div className="relative">
+                            <Input
+                              placeholder="Ex: FAMILLE2024"
+                              value={inviteCode}
+                              onChange={(e) => {
+                                setInviteCode(e.target.value);
+                                setError("");
+                              }}
+                              onKeyPress={handleKeyPress}
+                              className={`text-center font-mono text-lg tracking-wider uppercase bg-white/70 border-2 transition-all duration-200 focus:ring-4 focus:ring-blue-100 ${
+                                error ? "border-red-500 focus:border-red-500 focus:ring-red-100" : "border-blue-200 focus:border-blue-400"
+                              }`}
+                              maxLength={20}
+                              autoFocus={false}
+                              onBlur={isLoading ? (e) => e.target.blur() : undefined}
+                              disabled={isLoading}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-md pointer-events-none"></div>
+                          </div>
                           {error && (
-                            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                            <div className="mt-3 p-4 bg-gradient-to-r from-red-50 to-red-100/50 border-2 border-red-200 rounded-lg shadow-sm">
                               <div className="flex items-center">
-                                <div className="w-4 h-4 border-2 border-red-500 rounded-full flex items-center justify-center mr-2">
-                                  <span className="text-red-500 text-xs font-bold">!</span>
+                                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                  <span className="text-white text-xs font-bold">!</span>
                                 </div>
-                                <p className="text-sm text-red-700">{error}</p>
+                                <p className="text-sm text-red-700 font-medium">{error}</p>
                               </div>
                             </div>
                           )}
                         </div>
                       </div>
-                      <DialogFooter className="sm:justify-center">
-                        <Button 
-                          onClick={handleVerifyCode} 
+                      <DialogFooter className="sm:justify-center pt-2">
+                        <Button
+                          onClick={handleVerifyCode}
                           disabled={!inviteCode || isLoading}
-                          className="w-full"
+                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-white font-medium"
+                          size="lg"
                         >
                           {isLoading ? (
                             <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                              Vérification...
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                              <span>Vérification en cours...</span>
                             </>
                           ) : (
                             <>
-                              <Search className="w-4 h-4 mr-2" />
-                              Vérifier le code
+                              <Search className="w-5 h-5 mr-2" />
+                              <span>Vérifier le code</span>
                             </>
                           )}
                         </Button>
@@ -247,50 +261,62 @@ function TontineContent() {
                     </>
                   ) : (
                     <>
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center text-green-600">
-                          <CheckCircle className="w-5 h-5 mr-2" />
-                          Code valide !
+                      <DialogHeader className="pb-4">
+                        <DialogTitle className="text-xl font-bold text-gray-900 font-poppins text-left mb-4">
+                          Tontine trouvée !
                         </DialogTitle>
-                        <DialogDescription>
-                          Vous pouvez maintenant rejoindre cette tontine
-                        </DialogDescription>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                            <CheckCircle className="w-6 h-6 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-green-900 mb-1">Code validé avec succès</h3>
+                            <p className="text-sm text-gray-600">
+                              Vous pouvez maintenant rejoindre cette tontine
+                            </p>
+                          </div>
+                        </div>
                       </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-5 shadow-sm">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-green-900 mb-2 font-poppins">{tontineDetails?.name}</h3>
-                              <div className="space-y-1.5">
-                                <div className="flex items-center text-sm text-green-700">
-                                  <div className="w-5 h-5 bg-green-100 rounded-md flex items-center justify-center mr-2.5">
-                                    <Users className="w-3 h-3 text-green-600" />
-                                  </div>
-                                  <span className="font-medium">{tontineDetails?.participants}</span>
-                                  <span className="ml-1">participants</span>
-                                </div>
-                                <div className="flex items-center text-sm text-green-700">
-                                  <div className="w-5 h-5 bg-green-100 rounded-md flex items-center justify-center mr-2.5">
-                                    <DollarSign className="w-3 h-3 text-green-600" />
-                                  </div>
-                                  <span className="font-medium">{tontineDetails?.amount}</span>
-                                  <span className="ml-1">par tour</span>
-                                </div>
-                              </div>
+                      <div className="py-2">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-green-900 font-poppins">{tontineDetails?.name}</h4>
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                              <Users className="w-4 h-4 text-green-600" />
                             </div>
-                            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center ml-4">
-                              <Users className="w-7 h-7 text-green-600" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div className="flex items-center text-green-700">
+                              <div className="w-6 h-6 bg-green-100 rounded-md flex items-center justify-center mr-2">
+                                <Users className="w-3 h-3 text-green-600" />
+                              </div>
+                              <span className="font-medium">{tontineDetails?.participants}</span>
+                              <span className="ml-1">participants</span>
+                            </div>
+                            <div className="flex items-center text-green-700">
+                              <div className="w-6 h-6 bg-green-100 rounded-md flex items-center justify-center mr-2">
+                                <DollarSign className="w-3 h-3 text-green-600" />
+                              </div>
+                              <span className="font-medium">{tontineDetails?.amount}</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <DialogFooter className="sm:justify-center space-x-2">
-                        <Button variant="outline" onClick={resetDialog}>
+                      <DialogFooter className="sm:justify-center space-x-3 pt-2">
+                        <Button
+                          variant="outline"
+                          onClick={resetDialog}
+                          className="border-gray-300 hover:bg-gray-50"
+                        >
                           Annuler
                         </Button>
-                        <Button onClick={handleJoinTontine} className="flex-1">
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Ouvrir
+                        <Button
+                          onClick={handleJoinTontine}
+                          className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-white font-medium"
+                          size="lg"
+                        >
+                          <ExternalLink className="w-5 h-5 mr-2" />
+                          <span>Rejoindre maintenant</span>
                         </Button>
                       </DialogFooter>
                     </>
