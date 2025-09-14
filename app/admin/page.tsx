@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CreateTontineForm } from "@/components/dashboard/CreateTontineForm";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +74,8 @@ import {
   Crown,
   Zap,
   UserCheck,
+  Check,
+  ChevronsUpDown,
   UserX,
   Eye,
   Download,
@@ -91,6 +102,10 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedUser, setSelectedUser] = useState<{name: string, email: string, avatar: string} | null>(null);
+  const [selectedTontine, setSelectedTontine] = useState<{name: string, participants: number, amount: string} | null>(null);
+  const [openUserCombo, setOpenUserCombo] = useState(false);
+  const [openTontineCombo, setOpenTontineCombo] = useState(false);
 
   // Mock data
   const stats = {
@@ -831,12 +846,12 @@ export default function AdminPanel() {
               </div>
               
               {/* Actions - deuxième ligne */}
-              <div className="flex justify-end">
+              {/* <div className="flex justify-end">
                 <Button className="w-full sm:w-auto">
                   <UserPlus className="w-4 h-4 mr-2" />
                   Nouvel utilisateur
                 </Button>
-              </div>
+              </div> */}
             </div>
 
             {/* Users Table */}
@@ -1489,9 +1504,257 @@ export default function AdminPanel() {
             <Card>
               <CardHeader className="pb-4">
                 <div className="flex flex-col gap-4">
-                  <div>
-                    <CardTitle className="text-lg">Gestion des transactions</CardTitle>
-                    <CardDescription>Historique complet des paiements et retraits</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Gestion des transactions</CardTitle>
+                      <CardDescription>Historique complet des paiements et retraits</CardDescription>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="bg-green-600 hover:bg-green-700">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Nouveau paiement
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md mx-2 sm:mx-auto max-h-[85vh] overflow-y-auto">
+                        <DialogHeader className="pb-1 sm:pb-2">
+                          <DialogTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2 text-start">
+                            Nouveau paiement
+                          </DialogTitle>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
+                              <Plus className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1 text-start">
+                              <p className="text-sm font-medium text-gray-900 text-start">Paiement manuel</p>
+                              <p className="text-xs text-gray-500 text-start">Enregistrer une transaction</p>
+                            </div>
+                          </div>
+                        </DialogHeader>
+                        <div className="space-y-2 sm:space-y-3">
+                          {/* Recherche utilisateur */}
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-5 h-5 bg-blue-100 rounded-md flex items-center justify-center">
+                                <User className="w-3 h-3 text-blue-600" />
+                              </div>
+                              <Label className="text-sm font-medium text-gray-900">Utilisateur</Label>
+                            </div>
+                            <Popover open={openUserCombo} onOpenChange={setOpenUserCombo}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={openUserCombo}
+                                  className="w-full justify-between"
+                                >
+                                  {selectedUser
+                                    ? selectedUser.name
+                                    : "Sélectionner un utilisateur..."}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder="Rechercher un utilisateur..." className="h-9" />
+                                  <CommandList>
+                                    <CommandEmpty>Aucun utilisateur trouvé.</CommandEmpty>
+                                    <CommandGroup>
+                                      {[
+                                        { name: "Jean Dupont", email: "jean@example.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
+                                        { name: "Marie Kone", email: "marie.kone@email.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
+                                        { name: "Amadou Diallo", email: "amadou.diallo@gmail.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
+                                        { name: "Fatou Traore", email: "fatou.traore@yahoo.fr", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
+                                        { name: "Boubacar Cisse", email: "boubacar.cisse@outlook.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
+                                        { name: "Aicha Sow", email: "aicha.sow@hotmail.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" }
+                                      ].map((user) => (
+                                        <CommandItem
+                                          key={user.email}
+                                          value={user.name}
+                                          onSelect={() => {
+                                            setSelectedUser(user)
+                                            setOpenUserCombo(false)
+                                          }}
+                                        >
+                                          <div className="flex items-center space-x-2 w-full">
+                                            <Avatar className="h-6 w-6">
+                                              <AvatarImage src={user.avatar} />
+                                              <AvatarFallback className="text-xs">
+                                                {user.name.split(' ').map(n => n[0]).join('')}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 min-w-0">
+                                              <p className="text-sm font-medium truncate">{user.name}</p>
+                                              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                            </div>
+                                          </div>
+                                          <Check
+                                            className={cn(
+                                              "ml-auto h-4 w-4",
+                                              selectedUser?.name === user.name ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+
+                          {/* Recherche tontine */}
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-5 h-5 bg-purple-100 rounded-md flex items-center justify-center">
+                                <Users className="w-3 h-3 text-purple-600" />
+                              </div>
+                              <Label className="text-sm font-medium text-gray-900">Tontine</Label>
+                            </div>
+                            <Popover open={openTontineCombo} onOpenChange={setOpenTontineCombo}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={openTontineCombo}
+                                  className="w-full justify-between"
+                                >
+                                  {selectedTontine
+                                    ? selectedTontine.name
+                                    : "Sélectionner une tontine..."}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0" align="start">
+                                <Command>
+                                  <CommandInput placeholder="Rechercher une tontine..." className="h-9" />
+                                  <CommandList>
+                                    <CommandEmpty>Aucune tontine trouvée.</CommandEmpty>
+                                    <CommandGroup>
+                                      {[
+                                        { name: "Tontine Famille", participants: 12, amount: "85,000 FCFA", status: "active" },
+                                        { name: "Épargne Projet", participants: 8, amount: "50,000 FCFA", status: "active" },
+                                        { name: "Business Fund", participants: 6, amount: "25,000 FCFA", status: "active" },
+                                        { name: "Groupe Amis", participants: 10, amount: "30,000 FCFA", status: "pending" },
+                                        { name: "Tontine Étudiants", participants: 15, amount: "15,000 FCFA", status: "active" },
+                                        { name: "Solidarité Femmes", participants: 20, amount: "40,000 FCFA", status: "active" }
+                                      ].map((tontine) => (
+                                        <CommandItem
+                                          key={tontine.name}
+                                          value={tontine.name}
+                                          onSelect={() => {
+                                            setSelectedTontine(tontine)
+                                            setOpenTontineCombo(false)
+                                          }}
+                                        >
+                                          <div className="flex items-center space-x-2 w-full">
+                                            <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-md flex items-center justify-center">
+                                              <Users className="w-3 h-3 text-white" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                              <p className="text-sm font-medium truncate">{tontine.name}</p>
+                                              <p className="text-xs text-gray-500 truncate">{tontine.participants} participants • {tontine.amount}</p>
+                                            </div>
+                                          </div>
+                                          <Check
+                                            className={cn(
+                                              "ml-auto h-4 w-4",
+                                              selectedTontine?.name === tontine.name ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+
+                          {/* Type de paiement */}
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-5 h-5 bg-orange-100 rounded-md flex items-center justify-center">
+                                <CreditCard className="w-3 h-3 text-orange-600" />
+                              </div>
+                              <Label className="text-sm font-medium text-gray-900">Type</Label>
+                            </div>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner le type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="contribution">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                    <div>
+                                      <p className="font-medium">Contribution</p>
+                                      <p className="text-xs text-gray-500">Versement</p>
+                                    </div>
+                                  </div>
+                                </SelectItem>
+                                <SelectItem value="distribution">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                    <div>
+                                      <p className="font-medium">Distribution</p>
+                                      <p className="text-xs text-gray-500">Retrait</p>
+                                    </div>
+                                  </div>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Montant */}
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-5 h-5 bg-green-100 rounded-md flex items-center justify-center">
+                                <DollarSign className="w-3 h-3 text-green-600" />
+                              </div>
+                              <Label htmlFor="amount" className="text-sm font-medium text-gray-900">Montant</Label>
+                            </div>
+                            <div className="relative">
+                              <Input
+                                id="amount"
+                                type="number"
+                                placeholder="0"
+                                min="0"
+                                step="500"
+                                className="pl-12"
+                              />
+                              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                                FCFA
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Note optionnelle */}
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-5 h-5 bg-gray-100 rounded-md flex items-center justify-center">
+                                <FileText className="w-3 h-3 text-gray-600" />
+                              </div>
+                              <Label htmlFor="payment-note" className="text-sm font-medium text-gray-900">Note</Label>
+                            </div>
+                            <Input
+                              id="payment-note"
+                              placeholder="Référence ou commentaire..."
+                              maxLength={100}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter className="gap-2 pt-2 sm:pt-3">
+                          <Button variant="outline" className="flex-1 h-9 sm:h-10">
+                            Annuler
+                          </Button>
+                          <Button className="flex-1 h-9 sm:h-10">
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Enregistrer
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
@@ -1737,21 +2000,33 @@ export default function AdminPanel() {
               {/* System Settings */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Paramètres système</CardTitle>
+                  <CardTitle>Paramètres généraux</CardTitle>
                   <CardDescription>Configuration générale de la plateforme</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="platform-name">Nom de la plateforme</Label>
-                    <Input id="platform-name" defaultValue="Tontine Digital" />
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="support-email">Email de support</Label>
                     <Input id="support-email" type="email" defaultValue="support@tontine.com" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="max-participants">Participants max par tontine</Label>
-                    <Input id="max-participants" type="number" defaultValue="50" />
+                    <Label htmlFor="platform-timezone">Fuseau horaire</Label>
+                    <Select defaultValue="africa/abidjan">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="africa/abidjan">Afrique/Abidjan (GMT)</SelectItem>
+                        <SelectItem value="africa/casablanca">Afrique/Casablanca (GMT+1)</SelectItem>
+                        <SelectItem value="africa/lagos">Afrique/Lagos (GMT+1)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maintenance-mode">Mode maintenance</Label>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="maintenance-mode" />
+                      <Label htmlFor="maintenance-mode">Activer le mode maintenance</Label>
+                    </div>
                   </div>
                   <Button>Sauvegarder les paramètres</Button>
                 </CardContent>
@@ -1761,37 +2036,165 @@ export default function AdminPanel() {
               <Card>
                 <CardHeader>
                   <CardTitle>Sécurité</CardTitle>
-                  <CardDescription>Paramètres de sécurité et d'authentification</CardDescription>
+                  <CardDescription>Paramètres de sécurité et vérification</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="session-timeout">Durée de session (minutes)</Label>
-                    <Input id="session-timeout" type="number" defaultValue="120" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password-policy">Politique de mot de passe</Label>
-                    <Select defaultValue="strong">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="basic">Basique</SelectItem>
-                        <SelectItem value="medium">Moyen</SelectItem>
-                        <SelectItem value="strong">Fort</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Authentification à deux facteurs</Label>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="2fa" defaultChecked />
-                      <Label htmlFor="2fa">Obligatoire pour les admins</Label>
+                    <Label>Vérification d'identité</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="id-verification" defaultChecked />
+                        <Label htmlFor="id-verification">Obligatoire pour créer une tontine</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="phone-verification" defaultChecked />
+                        <Label htmlFor="phone-verification">Vérification téléphone obligatoire</Label>
+                      </div>
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="api-rate-limit">Limite de requêtes API (par minute)</Label>
+                    <Input id="api-rate-limit" type="number" defaultValue="100" />
                   </div>
                   <Button>Appliquer les changements</Button>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Geographic Access Control */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Accès géographique</CardTitle>
+                <CardDescription>Gestion des pays autorisés à utiliser la plateforme</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="country-search">Ajouter un pays autorisé</Label>
+                    <div className="flex space-x-2">
+                      <div className="flex-1">
+                        <Input
+                          id="country-search"
+                          placeholder="Rechercher un pays..."
+                          list="countries-list"
+                        />
+                        <datalist id="countries-list">
+                          {/* Afrique de l'Ouest */}
+                          <option value="Bénin" />
+                          <option value="Burkina Faso" />
+                          <option value="Cap-Vert" />
+                          <option value="Côte d'Ivoire" />
+                          <option value="Gambie" />
+                          <option value="Ghana" />
+                          <option value="Guinée" />
+                          <option value="Guinée-Bissau" />
+                          <option value="Liberia" />
+                          <option value="Mali" />
+                          <option value="Mauritanie" />
+                          <option value="Niger" />
+                          <option value="Nigeria" />
+                          <option value="Sénégal" />
+                          <option value="Sierra Leone" />
+                          <option value="Togo" />
+
+                          {/* Afrique Centrale */}
+                          <option value="Cameroun" />
+                          <option value="République Centrafricaine" />
+                          <option value="Tchad" />
+                          <option value="République Démocratique du Congo" />
+                          <option value="République du Congo" />
+                          <option value="Guinée Équatoriale" />
+                          <option value="Gabon" />
+                          <option value="São Tomé-et-Príncipe" />
+
+                          {/* Afrique de l'Est */}
+                          <option value="Burundi" />
+                          <option value="Comores" />
+                          <option value="Djibouti" />
+                          <option value="Érythrée" />
+                          <option value="Éthiopie" />
+                          <option value="Kenya" />
+                          <option value="Madagascar" />
+                          <option value="Malawi" />
+                          <option value="Maurice" />
+                          <option value="Mozambique" />
+                          <option value="Rwanda" />
+                          <option value="Seychelles" />
+                          <option value="Somalie" />
+                          <option value="Soudan du Sud" />
+                          <option value="Soudan" />
+                          <option value="Tanzanie" />
+                          <option value="Ouganda" />
+                          <option value="Zambie" />
+                          <option value="Zimbabwe" />
+
+                          {/* Afrique du Nord */}
+                          <option value="Algérie" />
+                          <option value="Égypte" />
+                          <option value="Libye" />
+                          <option value="Maroc" />
+                          <option value="Tunisie" />
+
+                          {/* Afrique Australe */}
+                          <option value="Afrique du Sud" />
+                          <option value="Angola" />
+                          <option value="Botswana" />
+                          <option value="Eswatini" />
+                          <option value="Lesotho" />
+                          <option value="Namibie" />
+
+                          {/* Europe */}
+                          <option value="France" />
+                          <option value="Belgique" />
+                          <option value="Suisse" />
+                          <option value="Canada" />
+
+                          {/* Autres */}
+                          <option value="Haïti" />
+                        </datalist>
+                      </div>
+                      <Button>
+                        <Plus className="w-4 h-4 mr-1" />
+                        Ajouter
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Pays actuellement autorisés</Label>
+                    <div className="border rounded-lg p-4 min-h-[80px]">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-300 px-3 py-1 text-sm flex items-center gap-2">
+                          🇧🇯 Bénin
+                          <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-green-700 hover:text-red-600">
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </Badge>
+                        {/* Les autres pays seront ajoutés ici dynamiquement */}
+                      </div>
+                      {/* Message quand aucun pays n'est ajouté */}
+                      <div className="hidden text-gray-500 text-sm text-center py-4">
+                        Aucun pays supplémentaire ajouté
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-gray-900">Restriction géographique</p>
+                      <p className="text-xs text-gray-500">Bloquer l'accès depuis les pays non autorisés</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="geo-restriction" defaultChecked />
+                      <Label htmlFor="geo-restriction" className="text-sm">Activé</Label>
+                    </div>
+                  </div>
+                  <Button className="mt-4">Sauvegarder les paramètres</Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Quick Actions */}
             <Card>
