@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CreateTontineForm } from "@/components/dashboard/CreateTontineForm";
 import { cn } from "@/lib/utils";
+import TontineDetailsModal from "@/components/admin/TontineDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -106,6 +107,8 @@ export default function AdminPanel() {
   const [selectedTontine, setSelectedTontine] = useState<{name: string, participants: number, amount: string} | null>(null);
   const [openUserCombo, setOpenUserCombo] = useState(false);
   const [openTontineCombo, setOpenTontineCombo] = useState(false);
+  const [tontineDetailsModal, setTontineDetailsModal] = useState(false);
+  const [selectedTontineForDetails, setSelectedTontineForDetails] = useState<any>(null);
 
   // Mock data
   const stats = {
@@ -128,10 +131,58 @@ export default function AdminPanel() {
   ];
 
   const recentTontines = [
-    { id: 1, name: "Tontine Famille Kouassi", participants: 12, amount: "50,000", status: "active", creator: "Marie Kouassi", date: "2024-01-15" },
-    { id: 2, name: "Épargne Étudiants", participants: 8, amount: "25,000", status: "completed", creator: "Jean Baptiste", date: "2024-01-10" },
-    { id: 3, name: "Business Network", participants: 15, amount: "100,000", status: "active", creator: "Fatima Diallo", date: "2024-01-08" },
-    { id: 4, name: "Tontine Marché", participants: 20, amount: "30,000", status: "pending", creator: "Kofi Asante", date: "2024-01-05" }
+    {
+      id: "1",
+      name: "Tontine Famille Kouassi",
+      participants: 12,
+      amount: "50,000 FCFA",
+      status: "active",
+      creator: "Marie Kouassi",
+      date: "2024-01-15",
+      startDate: "15 Mars 2024",
+      endDate: "15 Mars 2025",
+      currentTour: 3,
+      totalTours: 12
+    },
+    {
+      id: "2",
+      name: "Épargne Étudiants",
+      participants: 8,
+      amount: "25,000 FCFA",
+      status: "completed",
+      creator: "Jean Baptiste",
+      date: "2024-01-10",
+      startDate: "10 Janvier 2024",
+      endDate: "10 Septembre 2024",
+      currentTour: 8,
+      totalTours: 8
+    },
+    {
+      id: "3",
+      name: "Business Network",
+      participants: 15,
+      amount: "100,000 FCFA",
+      status: "active",
+      creator: "Fatima Diallo",
+      date: "2024-01-08",
+      startDate: "8 Janvier 2024",
+      endDate: "8 Avril 2025",
+      currentTour: 2,
+      totalTours: 15
+    },
+    {
+      id: "4",
+      name: "Tontine Marché",
+      participants: 20,
+      amount: "30,000 FCFA",
+      status: "pending",
+      creator: "Kofi Asante",
+      date: "2024-01-05",
+      startDate: "5 Février 2024",
+      endDate: "5 Octobre 2025",
+      currentTour: 1,
+      totalTours: 20
+    }
   ];
 
   const recentTransactions = [
@@ -1296,7 +1347,15 @@ export default function AdminPanel() {
                           </TableCell>
                           <TableCell className="text-right py-4">
                             <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-blue-50"
+                                onClick={() => {
+                                  setSelectedTontineForDetails(tontine);
+                                  setTontineDetailsModal(true);
+                                }}
+                              >
                                 <Eye className="w-4 h-4 text-blue-600" />
                               </Button>
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-50">
@@ -1395,7 +1454,15 @@ export default function AdminPanel() {
                             )}
                           </div>
                           <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 hover:bg-blue-50"
+                              onClick={() => {
+                                setSelectedTontineForDetails(tontine);
+                                setTontineDetailsModal(true);
+                              }}
+                            >
                               <Eye className="w-4 h-4 text-blue-600" />
                             </Button>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-50">
@@ -2248,6 +2315,13 @@ export default function AdminPanel() {
           </div>
         </footer> */}
       </main>
+
+      {/* Modal de détails de tontine */}
+      <TontineDetailsModal
+        open={tontineDetailsModal}
+        onOpenChange={setTontineDetailsModal}
+        tontine={selectedTontineForDetails}
+      />
     </div>
   );
 }
