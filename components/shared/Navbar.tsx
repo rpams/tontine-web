@@ -30,18 +30,19 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Desktop Menu */}
+          <div className="hidden sm:flex items-center space-x-4">
             {currentPage === "contact" ? (
               <>
                 <a
                   href="/"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm sm:text-base"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-base"
                 >
                   Accueil
                 </a>
                 <a
                   href="/login"
-                  className="bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-base"
                 >
                   Connexion
                 </a>
@@ -50,19 +51,60 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
               <>
                 <a
                   href="/contact"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm sm:text-base"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-base"
                 >
                   Contact
                 </a>
                 <a
                   href="/login"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm sm:text-base"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-base"
                 >
                   Connexion
                 </a>
                 <a
                   href="/register"
-                  className="bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-base"
+                >
+                  Inscription
+                </a>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu */}
+          <div className="sm:hidden flex items-center space-x-2">
+            {currentPage === "contact" ? (
+              <>
+                <a
+                  href="/"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm"
+                >
+                  Accueil
+                </a>
+                <a
+                  href="/login"
+                  className="bg-blue-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
+                >
+                  Connexion
+                </a>
+              </>
+            ) : (
+              <>
+                <a
+                  href="/contact"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm"
+                >
+                  Contact
+                </a>
+                <a
+                  href="/login"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors text-sm"
+                >
+                  Connexion
+                </a>
+                <a
+                  href="/register"
+                  className="bg-blue-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
                 >
                   Inscription
                 </a>
@@ -70,6 +112,7 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
             )}
           </div>
         </div>
+
       </div>
     </header>
   );

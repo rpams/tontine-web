@@ -354,21 +354,21 @@ export function CompleteProfileForm({
                 {/* Téléphone */}
                 <div className="space-y-2">
                   <Label htmlFor="phone">Téléphone</Label>
-                  <div className="relative flex">
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <div className="flex items-center justify-center pl-10 pr-3 py-2 bg-gray-50 border border-r-0 rounded-l-md text-sm font-medium text-gray-700 h-10">
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
+                    <div className="flex">
+                      <span className="inline-flex items-center pl-10 pr-3 py-2 rounded-l-md border border-r-0 border-input bg-background text-foreground text-sm font-medium h-10">
                         +229
-                      </div>
+                      </span>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="01 XX XX XX XX"
+                        className="rounded-l-none border-l-0 h-10 flex-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0"
+                        value={phoneNumber}
+                        onChange={handlePhoneChange}
+                      />
                     </div>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="01 XX XX XX XX"
-                      className="rounded-l-none border-l-0 h-10 flex-1"
-                      value={phoneNumber}
-                      onChange={handlePhoneChange}
-                    />
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Optionnel - Format: 01XXXXXXXX

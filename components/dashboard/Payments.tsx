@@ -236,79 +236,81 @@ export default function Payments() {
       </div>
 
       {/* Search & Filters */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="relative flex-1 bg-white">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input 
-              placeholder="Rechercher par référence, tontine ou bénéficiaire..." 
-              className="pl-10"
-            />
-          </div>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[140px] justify-start">
-                <Filter className="w-4 h-4 mr-2" />
-                Statut
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuCheckboxItem checked>
-                <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                Payé
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>
-                <TrendingUp className="w-4 h-4 mr-2 text-blue-500" />
-                Reçu
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>
-                <Clock className="w-4 h-4 mr-2 text-yellow-500" />
-                En attente
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>
-                <XCircle className="w-4 h-4 mr-2 text-red-500" />
-                Échoué
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[140px] justify-start">
-                <DollarSign className="w-4 h-4 mr-2" />
-                Type
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuCheckboxItem checked>
-                <TrendingDown className="w-4 h-4 mr-2 text-red-500" />
-                Contribution
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>
-                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
-                Gain
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <div className="space-y-3">
+        {/* Search Bar - Full width on mobile */}
+        <div className="relative bg-white">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Rechercher par référence, tontine ou bénéficiaire..."
+            className="pl-10 h-10"
+          />
         </div>
 
-        {/* Selected Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <div className="flex flex-wrap gap-2 min-w-0">
-            <Badge className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white border-green-500">
-              <CheckCircle className="w-3 h-3" />
-              Payé
-              <X className="w-3 h-3 ml-1 cursor-pointer hover:text-green-200" />
-            </Badge>
-            <Badge className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white border-red-500">
-              <TrendingDown className="w-3 h-3" />
-              Contribution
-              <X className="w-3 h-3 ml-1 cursor-pointer hover:text-red-200" />
-            </Badge>
+        {/* Filters Row */}
+        <div className="flex flex-col xs:flex-row gap-2">
+          <div className="flex flex-1 gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex-1 xs:flex-none xs:min-w-[120px] justify-start h-10">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <span className="truncate">Statut</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48">
+                <DropdownMenuCheckboxItem checked>
+                  <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                  Payé
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem>
+                  <TrendingUp className="w-4 h-4 mr-2 text-blue-500" />
+                  Reçu
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem>
+                  <Clock className="w-4 h-4 mr-2 text-yellow-500" />
+                  En attente
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem>
+                  <XCircle className="w-4 h-4 mr-2 text-red-500" />
+                  Échoué
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex-1 xs:flex-none xs:min-w-[120px] justify-start h-10">
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  <span className="truncate">Type</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48">
+                <DropdownMenuCheckboxItem checked>
+                  <TrendingDown className="w-4 h-4 mr-2 text-red-500" />
+                  Contribution
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem>
+                  <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                  Gain
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          
-          <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-500">
+
+        </div>
+
+        {/* Selected Filters with Reset Button */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white border-green-500 text-xs">
+            <CheckCircle className="w-3 h-3" />
+            Payé
+            <X className="w-3 h-3 ml-1 cursor-pointer hover:text-green-200" />
+          </Badge>
+          <Badge className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white border-red-500 text-xs">
+            <TrendingDown className="w-3 h-3" />
+            Contribution
+            <X className="w-3 h-3 ml-1 cursor-pointer hover:text-red-200" />
+          </Badge>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-red-500">
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>

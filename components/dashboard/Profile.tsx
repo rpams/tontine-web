@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { 
-  User, 
+import {
+  User,
   Mail,
   Phone,
   MapPin,
@@ -25,7 +25,8 @@ import {
   ImageIcon,
   Camera,
   Check,
-  BadgeCheck
+  BadgeCheck,
+  Users
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -49,6 +50,7 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
     name: "Jean Dupont",
     email: "jean.dupont@email.com",
     phone: "+229 97 12 34 56",
+    gender: "Homme",
     address: "Quartier Fidjrossè, Cotonou, Bénin",
     joinDate: "Janvier 2024",
     document: "/images/id.jpg", // "/images/id.jpg" pour tester avec une image - mettre null pour non vérifié
@@ -197,10 +199,10 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                 )}
               </div>
               <p className="text-sm text-gray-600">{formData.email}</p>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 mt-1 text-xs">
+              {/* <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 mt-1 text-xs">
                 <Shield className="w-2.5 h-2.5 mr-1" />
                 Vérifié
-              </Badge>
+              </Badge> */}
             </div>
           </div>
           <Button 
@@ -296,11 +298,40 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
               </div>
 
               <div>
+                <Label htmlFor="gender" className="text-xs font-medium text-gray-600 mb-1 block">Sexe</Label>
+                {isEditing && !formData.isDocumentVerified ? (
+                  <div className="relative">
+                    <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-indigo-500" />
+                    <select
+                      id="gender"
+                      value={formData.gender}
+                      onChange={(e) => handleInputChange("gender", e.target.value)}
+                      className="w-full h-9 pl-9 pr-3 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      <option value="Homme">Homme</option>
+                      <option value="Femme">Femme</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div className="flex items-center p-2 rounded border bg-gray-50 h-9">
+                    <Users className="w-3 h-3 mr-2 text-indigo-500" />
+                    <span className="text-sm">{formData.gender}</span>
+                    {formData.isDocumentVerified && (
+                      <Badge variant="outline" className="ml-auto bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0">
+                        <Shield className="w-2 h-2 mr-1" />
+                        Vérifié
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
                 <Label htmlFor="address" className="text-xs font-medium text-gray-600 mb-1 block">Adresse</Label>
                 {isEditing ? (
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-orange-500" />
-                    <Input 
+                    <Input
                       id="address"
                       value={formData.address}
                       onChange={(e) => handleInputChange("address", e.target.value)}
