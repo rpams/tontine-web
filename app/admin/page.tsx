@@ -5,6 +5,7 @@ import { CreateTontineForm } from "@/components/dashboard/CreateTontineForm";
 import { cn } from "@/lib/utils";
 import TontineDetailsModal from "@/components/admin/TontineDetailsModal";
 import CreatePaymentModal from "@/components/admin/CreatePaymentModal";
+import UserDetailsModal from "@/components/admin/UserDetailsModal";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -106,6 +107,8 @@ export default function AdminPanel() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [tontineDetailsModal, setTontineDetailsModal] = useState(false);
   const [selectedTontineForDetails, setSelectedTontineForDetails] = useState<any>(null);
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState<any>(null);
+  const [userDetailsModal, setUserDetailsModal] = useState(false);
 
   // Mock data
   const stats = {
@@ -1024,7 +1027,15 @@ export default function AdminPanel() {
                           </TableCell>
                           <TableCell className="text-right py-4">
                             <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-blue-50"
+                                onClick={() => {
+                                  setSelectedUserForDetails(user);
+                                  setUserDetailsModal(true);
+                                }}
+                              >
                                 <Eye className="w-4 h-4 text-blue-600" />
                               </Button>
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-50">
@@ -1103,7 +1114,15 @@ export default function AdminPanel() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => {
+                              setSelectedUserForDetails(user);
+                              setUserDetailsModal(true);
+                            }}
+                          >
                             <Eye className="w-4 h-4 text-blue-600" />
                           </Button>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -2075,6 +2094,13 @@ export default function AdminPanel() {
         open={tontineDetailsModal}
         onOpenChange={setTontineDetailsModal}
         tontine={selectedTontineForDetails}
+      />
+
+      {/* Modal de détails de l'utilisateur */}
+      <UserDetailsModal
+        open={userDetailsModal}
+        onOpenChange={setUserDetailsModal}
+        user={selectedUserForDetails}
       />
     </div>
   );
