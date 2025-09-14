@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CreateTontineForm } from "@/components/dashboard/CreateTontineForm";
 import { cn } from "@/lib/utils";
 import TontineDetailsModal from "@/components/admin/TontineDetailsModal";
+import CreatePaymentModal from "@/components/admin/CreatePaymentModal";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -103,10 +104,6 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [selectedUser, setSelectedUser] = useState<{name: string, email: string, avatar: string} | null>(null);
-  const [selectedTontine, setSelectedTontine] = useState<{name: string, participants: number, amount: string} | null>(null);
-  const [openUserCombo, setOpenUserCombo] = useState(false);
-  const [openTontineCombo, setOpenTontineCombo] = useState(false);
   const [tontineDetailsModal, setTontineDetailsModal] = useState(false);
   const [selectedTontineForDetails, setSelectedTontineForDetails] = useState<any>(null);
 
@@ -1571,268 +1568,25 @@ export default function AdminPanel() {
             <Card>
               <CardHeader className="pb-4">
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                     <div>
-                      <CardTitle className="text-lg">Gestion des transactions</CardTitle>
-                      <CardDescription>Historique complet des paiements et retraits</CardDescription>
+                      <CardTitle className="text-lg sm:text-xl">Gestion des transactions</CardTitle>
+                      <CardDescription className="text-sm sm:text-base">Historique complet des paiements et retraits</CardDescription>
                     </div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className="bg-green-600 hover:bg-green-700">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Nouveau paiement
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md mx-2 sm:mx-auto max-h-[85vh] overflow-y-auto">
-                        <DialogHeader className="pb-1 sm:pb-2">
-                          <DialogTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2 text-start">
-                            Nouveau paiement
-                          </DialogTitle>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
-                              <Plus className="w-4 h-4 text-white" />
-                            </div>
-                            <div className="flex-1 text-start">
-                              <p className="text-sm font-medium text-gray-900 text-start">Paiement manuel</p>
-                              <p className="text-xs text-gray-500 text-start">Enregistrer une transaction</p>
-                            </div>
-                          </div>
-                        </DialogHeader>
-                        <div className="space-y-2 sm:space-y-3">
-                          {/* Recherche utilisateur */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 bg-blue-100 rounded-md flex items-center justify-center">
-                                <User className="w-3 h-3 text-blue-600" />
-                              </div>
-                              <Label className="text-sm font-medium text-gray-900">Utilisateur</Label>
-                            </div>
-                            <Popover open={openUserCombo} onOpenChange={setOpenUserCombo}>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  aria-expanded={openUserCombo}
-                                  className="w-full justify-between"
-                                >
-                                  {selectedUser
-                                    ? selectedUser.name
-                                    : "Sélectionner un utilisateur..."}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[300px] p-0" align="start">
-                                <Command>
-                                  <CommandInput placeholder="Rechercher un utilisateur..." className="h-9" />
-                                  <CommandList>
-                                    <CommandEmpty>Aucun utilisateur trouvé.</CommandEmpty>
-                                    <CommandGroup>
-                                      {[
-                                        { name: "Jean Dupont", email: "jean@example.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
-                                        { name: "Marie Kone", email: "marie.kone@email.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
-                                        { name: "Amadou Diallo", email: "amadou.diallo@gmail.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
-                                        { name: "Fatou Traore", email: "fatou.traore@yahoo.fr", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
-                                        { name: "Boubacar Cisse", email: "boubacar.cisse@outlook.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" },
-                                        { name: "Aicha Sow", email: "aicha.sow@hotmail.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg" }
-                                      ].map((user) => (
-                                        <CommandItem
-                                          key={user.email}
-                                          value={user.name}
-                                          onSelect={() => {
-                                            setSelectedUser(user)
-                                            setOpenUserCombo(false)
-                                          }}
-                                        >
-                                          <div className="flex items-center space-x-2 w-full">
-                                            <Avatar className="h-6 w-6">
-                                              <AvatarImage src={user.avatar} />
-                                              <AvatarFallback className="text-xs">
-                                                {user.name.split(' ').map(n => n[0]).join('')}
-                                              </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1 min-w-0">
-                                              <p className="text-sm font-medium truncate">{user.name}</p>
-                                              <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                                            </div>
-                                          </div>
-                                          <Check
-                                            className={cn(
-                                              "ml-auto h-4 w-4",
-                                              selectedUser?.name === user.name ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-
-                          {/* Recherche tontine */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 bg-purple-100 rounded-md flex items-center justify-center">
-                                <Users className="w-3 h-3 text-purple-600" />
-                              </div>
-                              <Label className="text-sm font-medium text-gray-900">Tontine</Label>
-                            </div>
-                            <Popover open={openTontineCombo} onOpenChange={setOpenTontineCombo}>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  aria-expanded={openTontineCombo}
-                                  className="w-full justify-between"
-                                >
-                                  {selectedTontine
-                                    ? selectedTontine.name
-                                    : "Sélectionner une tontine..."}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[300px] p-0" align="start">
-                                <Command>
-                                  <CommandInput placeholder="Rechercher une tontine..." className="h-9" />
-                                  <CommandList>
-                                    <CommandEmpty>Aucune tontine trouvée.</CommandEmpty>
-                                    <CommandGroup>
-                                      {[
-                                        { name: "Tontine Famille", participants: 12, amount: "85,000 FCFA", status: "active" },
-                                        { name: "Épargne Projet", participants: 8, amount: "50,000 FCFA", status: "active" },
-                                        { name: "Business Fund", participants: 6, amount: "25,000 FCFA", status: "active" },
-                                        { name: "Groupe Amis", participants: 10, amount: "30,000 FCFA", status: "pending" },
-                                        { name: "Tontine Étudiants", participants: 15, amount: "15,000 FCFA", status: "active" },
-                                        { name: "Solidarité Femmes", participants: 20, amount: "40,000 FCFA", status: "active" }
-                                      ].map((tontine) => (
-                                        <CommandItem
-                                          key={tontine.name}
-                                          value={tontine.name}
-                                          onSelect={() => {
-                                            setSelectedTontine(tontine)
-                                            setOpenTontineCombo(false)
-                                          }}
-                                        >
-                                          <div className="flex items-center space-x-2 w-full">
-                                            <div className="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-600 rounded-md flex items-center justify-center">
-                                              <Users className="w-3 h-3 text-white" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                              <p className="text-sm font-medium truncate">{tontine.name}</p>
-                                              <p className="text-xs text-gray-500 truncate">{tontine.participants} participants • {tontine.amount}</p>
-                                            </div>
-                                          </div>
-                                          <Check
-                                            className={cn(
-                                              "ml-auto h-4 w-4",
-                                              selectedTontine?.name === tontine.name ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-
-                          {/* Type de paiement */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 bg-orange-100 rounded-md flex items-center justify-center">
-                                <CreditCard className="w-3 h-3 text-orange-600" />
-                              </div>
-                              <Label className="text-sm font-medium text-gray-900">Type</Label>
-                            </div>
-                            <Select>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Sélectionner le type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="contribution">
-                                  <div className="flex items-center">
-                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                                    <div>
-                                      <p className="font-medium">Contribution</p>
-                                      <p className="text-xs text-gray-500">Versement</p>
-                                    </div>
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="distribution">
-                                  <div className="flex items-center">
-                                    <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                                    <div>
-                                      <p className="font-medium">Distribution</p>
-                                      <p className="text-xs text-gray-500">Retrait</p>
-                                    </div>
-                                  </div>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Montant */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 bg-green-100 rounded-md flex items-center justify-center">
-                                <DollarSign className="w-3 h-3 text-green-600" />
-                              </div>
-                              <Label htmlFor="amount" className="text-sm font-medium text-gray-900">Montant</Label>
-                            </div>
-                            <div className="relative">
-                              <Input
-                                id="amount"
-                                type="number"
-                                placeholder="0"
-                                min="0"
-                                step="500"
-                                className="pl-12"
-                              />
-                              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                FCFA
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Note optionnelle */}
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 bg-gray-100 rounded-md flex items-center justify-center">
-                                <FileText className="w-3 h-3 text-gray-600" />
-                              </div>
-                              <Label htmlFor="payment-note" className="text-sm font-medium text-gray-900">Note</Label>
-                            </div>
-                            <Input
-                              id="payment-note"
-                              placeholder="Référence ou commentaire..."
-                              maxLength={100}
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter className="gap-2 pt-2 sm:pt-3">
-                          <Button variant="outline" className="flex-1 h-9 sm:h-10">
-                            Annuler
-                          </Button>
-                          <Button className="flex-1 h-9 sm:h-10">
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Enregistrer
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <div className="self-start sm:self-center flex-shrink-0">
+                      <CreatePaymentModal />
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-600">
+                    <div className="flex items-center gap-1 sm:gap-1.5">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="whitespace-nowrap">Terminées: {recentTransactions.filter(t => t.status === 'completed').length}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 sm:gap-1.5">
                       <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                       <span className="whitespace-nowrap">En attente: {recentTransactions.filter(t => t.status === 'pending').length}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 sm:gap-1.5">
                       <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                       <span className="whitespace-nowrap">Échecs: {recentTransactions.filter(t => t.status === 'failed').length}</span>
                     </div>
