@@ -57,7 +57,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
+import {
   Plus,
   Bell,
   Settings,
@@ -100,6 +100,7 @@ import {
   MapPin,
   Mail
 } from "lucide-react";
+import NavbarDashboard from "@/components/dashboard/NavbarDashboard";
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -204,88 +205,29 @@ export default function AdminPanel() {
       </div>
 
 
-      {/* Header */}
-      <header className="bg-white border-b relative z-10">
-        <div className="max-w-7xl mx-auto px-4 md:px-12">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <img 
-                  src="/images/logo.png" 
-                  alt="Logo Tontine" 
-                  className="w-16 h-12 sm:w-23 sm:h-16 object-contain"
-                />
-              </div>
-              <div className="hidden sm:block">
+      <div className="relative z-10">
+        <NavbarDashboard
+          userName="Admin"
+          userEmail="admin@tontine.app"
+        />
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 md:px-12 py-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
                 <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white border-0 shadow-md hover:from-red-600 hover:to-red-700 transition-all duration-300">
                   <Shield className="w-4 h-4 mr-2" />
                   <span className="font-bold">ADMIN</span>
                   <Crown className="w-4 h-4 ml-1" />
                 </Badge>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
               <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
                 <Bell className="w-3 h-3 mr-1" />
                 {stats.pendingVerifications}
               </Badge>
-              
-              <Popover>
-                <PopoverTrigger asChild>
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-gray-300 transition-all shadow-sm">
-                      <div className="w-6 h-6 rounded-full overflow-hidden">
-                        <img 
-                          src="/avatars/avatar-portrait-svgrepo-com.svg" 
-                          alt="Admin"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-2" align="end">
-                  <div className="space-y-1">
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <User className="w-4 h-4 mr-2" />
-                        Profil Admin
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Paramètres système
-                      </Button>
-                    </div>
-                    
-                    <hr className="my-2" />
-                    
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Download className="w-4 h-4 mr-2" />
-                        Exporter données
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Activity className="w-4 h-4 mr-2" />
-                        Logs système
-                      </Button>
-                    </div>
-                    
-                    <hr className="my-2" />
-                    
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Déconnexion
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-12 py-4 md:py-8">

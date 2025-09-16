@@ -34,10 +34,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Users, 
-  DollarSign, 
-  Calendar, 
+import {
+  Users,
+  DollarSign,
+  Calendar,
   Clock,
   ArrowLeft,
   Settings,
@@ -47,15 +47,12 @@ import {
   History,
   CheckCircle,
   XCircle,
-  User,
-  CreditCard,
-  LogOut,
-  Bell,
   ArrowUpRight,
   TrendingUp,
   Crown,
   Share2
 } from "lucide-react";
+import NavbarDashboard from "@/components/dashboard/NavbarDashboard";
 
 export default function TontineDetail() {
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
@@ -107,74 +104,7 @@ export default function TontineDetail() {
 
   return (
     <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 md:px-12">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <img 
-                src="/images/logo.png" 
-                alt="Logo Tontine" 
-                className="w-16 h-12 sm:w-23 sm:h-16 object-contain"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Avatar className="cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all border-2 border-blue-200 shadow-sm">
-                    <AvatarImage src="/avatars/avatar-portrait-svgrepo-com.svg" />
-                    <AvatarFallback className="bg-blue-50 text-blue-700 font-medium">JD</AvatarFallback>
-                  </Avatar>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-56 p-2"
-                  align="end"
-                >
-                  <div className="space-y-1">
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <User className="w-4 h-4 mr-2" />
-                        Mon profil
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Paramètres
-                      </Button>
-                    </div>
-                    
-                    <hr className="my-2" />
-                    
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nouvelle tontine
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Paiements
-                      </Button>
-                    </div>
-                    
-                    <hr className="my-2" />
-                    
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Bell className="w-4 h-4 mr-2" />
-                        Notifications
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Déconnexion
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-        </div>
-      </header>
+      <NavbarDashboard />
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 md:px-12 py-4 md:py-8">

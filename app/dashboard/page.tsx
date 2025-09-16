@@ -17,21 +17,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { 
-  Plus,
-  Bell,
-  Settings,
-  LogOut,
-  User,
-  CreditCard,
+import {
   BarChart3,
   Users,
+  CreditCard,
+  User,
   BadgeCheck
 } from "lucide-react";
 import Overview from "@/components/dashboard/Overview";
 import Profile from "@/components/dashboard/Profile";
 import Tontines from "@/components/dashboard/Tontines";
 import Payments from "@/components/dashboard/Payments";
+import NavbarDashboard from "@/components/dashboard/NavbarDashboard";
 import { Separator } from "@radix-ui/react-separator";
 
 export default function Dashboard() {
@@ -44,87 +41,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 md:px-12">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <img 
-                src="/images/logo.png" 
-                alt="Logo Tontine" 
-                className="w-16 h-12 sm:w-23 sm:h-16 object-contain"
-              />
-              {/* <div>
-                <p className="text-sm text-gray-600">Jeudi, 9 Septembre 2025</p>
-              </div> */}
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-full border-2 border-blue-500 bg-blue-50 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all shadow-sm">
-                      <div className="w-6 h-6 rounded-full overflow-hidden">
-                        <img 
-                          src={userAvatar} 
-                          alt="Avatar utilisateur"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-56 p-2"
-                  align="end"
-                >
-                  <div className="space-y-1">
-                    {/* Groupe 1 - Compte */}
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <User className="w-4 h-4 mr-2" />
-                        Mon profil
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Paramètres
-                      </Button>
-                    </div>
-                    
-                    <hr className="my-2" />
-                    
-                    {/* Groupe 2 - Actions */}
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nouvelle tontine
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Paiements
-                      </Button>
-                    </div>
-                    
-                    <hr className="my-2" />
-                    
-                    {/* Groupe 3 - Système */}
-                    <div className="space-y-1">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Bell className="w-4 h-4 mr-2" />
-                        Notifications
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Déconnexion
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-        </div>
-      </header>
+      <NavbarDashboard
+        userAvatar={userAvatar}
+        userName="Jean Dupont"
+        userEmail="jean.dupont@email.com"
+        userVerification={userVerification}
+      />
 
 
       {/* Main Content */}
