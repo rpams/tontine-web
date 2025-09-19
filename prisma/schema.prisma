@@ -53,6 +53,51 @@ enum InvitationStatus {
   EXPIRED
 }
 
+enum VerificationStatus {
+  NOT_STARTED
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum DocumentType {
+  CNI
+  PASSPORT
+  DRIVING_LICENSE
+}
+
+enum NotificationType {
+  TONTINE_INVITATION
+  PAYMENT_DUE
+  PAYMENT_RECEIVED
+  ROUND_COMPLETED
+  TONTINE_STARTED
+  IDENTITY_VERIFIED
+  SYSTEM_ANNOUNCEMENT
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AuditAction {
+  USER_CREATED
+  USER_UPDATED
+  USER_DELETED
+  USER_VERIFIED
+  TONTINE_CREATED
+  TONTINE_UPDATED
+  TONTINE_DELETED
+  PAYMENT_CREATED
+  PAYMENT_APPROVED
+  ADMIN_LOGIN
+  SETTINGS_CHANGED
+}
+
 model User {
   id            String    @id
   name          String
@@ -62,16 +107,30 @@ model User {
   telephone     String?
   address       String?
   role          Role      @default(USER)
+
+  // Nouveaux champs
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  loginCount    Int       @default(0)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+
   // Relations tontine
   createdTontines    Tontine[]           @relation("TontineCreator")
   participations     TontineParticipant[]
   payments           Payment[]
   receivedInvitations TontineInvitation[] @relation("InvitedUser")
   sentInvitations    TontineInvitation[] @relation("InviterUser")
-  
+
+  // Nouvelles relations
+  profile               UserProfile?
+  identityVerification  IdentityVerification?
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+  adminActions          AuditLog[]             @relation("AdminActions")
+  reviewedVerifications IdentityVerification[] @relation("VerificationReviewer")
+
   // Auth relations
   sessions      Session[]
   accounts      Account[]
@@ -231,6 +290,141 @@ model TontineInvitation {
   @@map("tontine_invitation")
 }
 
+model UserProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Informations personnelles détaillées
+  firstName     String?
+  lastName      String?
+  dateOfBirth   DateTime?
+  nationality   String?
+  profession    String?
+
+  // Informations de contact
+  phoneNumber   String?
+  address       String?
+  city          String?
+  country       String?
+  postalCode    String?
+
+  // Préférences
+  preferredLanguage String? @default("fr")
+  timezone      String?    @default("Africa/Dakar")
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("user_profile")
+}
+
+model IdentityVerification {
+  id              String             @id @default(cuid())
+  userId          String             @unique
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Statut et progression
+  status          VerificationStatus @default(NOT_STARTED)
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  approvedAt      DateTime?
+
+  // Informations document
+  documentType    DocumentType?
+  documentNumber  String?
+  firstName       String?
+  lastName        String?
+  dateOfBirth     DateTime?
+
+  // Photos documents
+  documentFrontUrl String?
+  documentBackUrl  String?
+
+  // Notes admin
+  rejectionReason String?
+  adminNotes      String?
+  reviewedById    String?
+  reviewer        User?              @relation("VerificationReviewer", fields: [reviewedById], references: [id])
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@map("identity_verification")
+}
+
+model Notification {
+  id          String               @id @default(cuid())
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Contenu
+  type        NotificationType
+  title       String
+  message     String
+  actionUrl   String?
+
+  // Métadonnées
+  priority    NotificationPriority @default(MEDIUM)
+  isRead      Boolean              @default(false)
+  readAt      DateTime?
+
+  // Contexte
+  tontineId   String?
+  roundId     String?
+  paymentId   String?
+
+  // Envoi
+  emailSent   Boolean              @default(false)
+  smsSent     Boolean              @default(false)
+
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@map("notification")
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+
+  // Action
+  action      AuditAction
+  tableName   String?     // Table affectée
+  recordId    String?     // ID du record affecté
+
+  // Contexte
+  userId      String?     // User qui a fait l'action
+  user        User?       @relation(fields: [userId], references: [id])
+  adminId     String?     // Admin qui a fait l'action
+  admin       User?       @relation("AdminActions", fields: [adminId], references: [id])
+
+  // Détails
+  oldValues   Json?       // Anciennes valeurs
+  newValues   Json?       // Nouvelles valeurs
+  metadata    Json?       // Métadonnées supplémentaires
+
+  // Traçabilité
+  ipAddress   String?
+  userAgent   String?
+
+  createdAt   DateTime    @default(now())
+
+  @@map("audit_log")
+}
+
+model SystemSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String?  @default("general")
+  isPublic    Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
 
 model Session {
   id        String   @id

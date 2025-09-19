@@ -3,12 +3,12 @@
 import { ResetPasswordForm } from "@/components/reset-password-form"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { AlertCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -107,6 +107,28 @@ export default function ResetPasswordPage() {
   }
 
   return (
+    <div className="flex w-full max-w-sm flex-col gap-4">
+      <a href="#" className="items-center gap-2 self-center font-medium">
+        <Image
+          src="/images/logo.png"
+          alt="Tontine"
+          width={120}
+          height={52}
+          className="drop-shadow-lg"
+        />
+      </a>
+
+      <ResetPasswordForm
+        email={email}
+        token={token}
+        onSuccess={handleSuccess}
+      />
+    </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
     <div className="relative min-h-svh">
       {/* Image de fond fixe */}
       <div className="fixed inset-0 z-0">
@@ -123,23 +145,22 @@ export default function ResetPasswordPage() {
 
       {/* Contenu scrollable par-dessus */}
       <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-6 p-6 md:p-10">
-        <div className="flex w-full max-w-sm flex-col gap-4">
-          <a href="#" className="items-center gap-2 self-center font-medium">
-            <Image
-              src="/images/logo.png"
-              alt="Tontine"
-              width={120}
-              height={52}
-              className="drop-shadow-lg"
-            />
-          </a>
-
-          <ResetPasswordForm
-            email={email}
-            token={token}
-            onSuccess={handleSuccess}
-          />
-        </div>
+        <Suspense fallback={
+          <div className="flex w-full max-w-sm flex-col gap-4">
+            <div className="items-center gap-2 self-center">
+              <Image
+                src="/images/logo.png"
+                alt="Tontine"
+                width={120}
+                height={52}
+                className="drop-shadow-lg"
+              />
+            </div>
+            <div className="animate-pulse bg-white/20 rounded-lg h-64"></div>
+          </div>
+        }>
+          <ResetPasswordContent />
+        </Suspense>
       </div>
     </div>
   )
