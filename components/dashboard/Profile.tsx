@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -471,6 +472,12 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                 <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span className="truncate">Méthodes de paiement</span>
               </Button>
+              <Link href="/identity-verification">
+                <Button variant="outline" size="sm" className="w-full justify-start h-9 text-sm">
+                  <Shield className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">Vérification d'identité</span>
+                </Button>
+              </Link>
               <Button variant="outline" size="sm" className="w-full justify-start h-9 text-sm">
                 <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span className="truncate">Paramètres avancés</span>

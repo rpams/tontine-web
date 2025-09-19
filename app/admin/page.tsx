@@ -256,6 +256,7 @@ export default function AdminPanel() {
           </div>
         </div>
 
+
         {/* Navigation Section */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 space-y-4 lg:space-y-0">
@@ -321,8 +322,8 @@ export default function AdminPanel() {
                 size="sm"
                 onClick={() => setActiveTab("settings")}
                 className={`flex items-center transition-all duration-300 ${
-                  activeTab === "settings" ? 
-                  "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md" : 
+                  activeTab === "settings" ?
+                  "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-md" :
                   "hover:bg-red-50 hover:text-red-700 hover:border-red-200"
                 }`}
               >
@@ -343,6 +344,15 @@ export default function AdminPanel() {
               <Badge variant="outline" className="text-orange-700 border-orange-200 bg-orange-50">
                 ⏳ {stats.pendingVerifications} vérifications en attente
               </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-2"
+                onClick={() => window.location.href = '/admin/metrics'}
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </Button>
             </div>
           </div>
           
@@ -1775,6 +1785,7 @@ export default function AdminPanel() {
             </Card>
           </div>
         )}
+
 
         {activeTab === "settings" && (
           <div className="space-y-6">

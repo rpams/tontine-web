@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,13 @@ import {
   Users,
   CreditCard,
   User,
-  BadgeCheck
+  BadgeCheck,
+  Shield,
+  AlertCircle,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ArrowRight
 } from "lucide-react";
 import Overview from "@/components/dashboard/Overview";
 import Profile from "@/components/dashboard/Profile";
@@ -38,6 +45,7 @@ export default function Dashboard() {
     isEmailVerified: true,
     isDocumentVerified: true
   });
+  const [identityVerificationStatus, setIdentityVerificationStatus] = useState<'not_started' | 'pending' | 'verified' | 'rejected'>('not_started');
 
   return (
     <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
@@ -77,6 +85,80 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Identity Verification Section */}
+        {identityVerificationStatus !== 'verified' && (
+          <div className="bg-white border rounded-lg p-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  identityVerificationStatus === 'not_started' ? 'bg-blue-50' :
+                  identityVerificationStatus === 'pending' ? 'bg-yellow-50' :
+                  identityVerificationStatus === 'rejected' ? 'bg-red-50' : 'bg-green-50'
+                }`}>
+                  {identityVerificationStatus === 'not_started' && <Shield className="w-5 h-5 text-blue-600" />}
+                  {identityVerificationStatus === 'pending' && <Clock className="w-5 h-5 text-yellow-600" />}
+                  {identityVerificationStatus === 'rejected' && <XCircle className="w-5 h-5 text-red-600" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-medium text-gray-900">
+                      {identityVerificationStatus === 'not_started' && 'Vérification d\'identité recommandée'}
+                      {identityVerificationStatus === 'pending' && 'Vérification d\'identité en cours'}
+                      {identityVerificationStatus === 'rejected' && 'Vérification d\'identité requise'}
+                    </h3>
+                    <Badge variant="outline" className={`text-xs ${
+                      identityVerificationStatus === 'not_started' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      identityVerificationStatus === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                      'bg-red-50 text-red-700 border-red-200'
+                    }`}>
+                      {identityVerificationStatus === 'not_started' && 'Optionnel'}
+                      {identityVerificationStatus === 'pending' && 'En attente'}
+                      {identityVerificationStatus === 'rejected' && 'Action requise'}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {identityVerificationStatus === 'not_started' && 'Augmentez vos limites de transaction et renforcez la sécurité de votre compte.'}
+                    {identityVerificationStatus === 'pending' && 'Votre demande est en cours de traitement. Nous vous contacterons sous 24-48h.'}
+                    {identityVerificationStatus === 'rejected' && 'Votre vérification a été rejetée. Veuillez soumettre de nouveaux documents.'}
+                  </p>
+                  {identityVerificationStatus === 'not_started' && (
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <span>✓ Limites augmentées</span>
+                      <span>✓ Sécurité renforcée</span>
+                      <span>✓ Accès complet</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {identityVerificationStatus === 'not_started' && (
+                  <Link href="/identity-verification">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Commencer la vérification
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                )}
+                {identityVerificationStatus === 'pending' && (
+                  <Button variant="outline" disabled>
+                    <Clock className="w-4 h-4 mr-2" />
+                    En cours de traitement
+                  </Button>
+                )}
+                {identityVerificationStatus === 'rejected' && (
+                  <Link href="/identity-verification">
+                    <Button variant="destructive">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Renouveler la vérification
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Section */}
         <div className="mb-8">

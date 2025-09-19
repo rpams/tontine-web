@@ -60,7 +60,8 @@ export function LoginForm({
       if (result.error) {
         setError(result.error.message)
       } else {
-        router.push("/dashboard")
+        // Rediriger vers la page OTP avec l'email en paramètre
+        router.push(`/otp-verification?email=${encodeURIComponent(data.email)}`)
       }
     } catch (error) {
       setError("Une erreur est survenue lors de la connexion")
@@ -135,7 +136,7 @@ export function LoginForm({
                   <div className="flex items-center">
                     <Label htmlFor="password">Mot de passe</Label>
                     <a
-                      href="#"
+                      href="/forgot-password"
                       className="ml-auto text-sm underline-offset-4 hover:underline"
                     >
                       Mot de passe oublié ?
