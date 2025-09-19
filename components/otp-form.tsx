@@ -23,6 +23,8 @@ import {
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { checkProfileCompletion, shouldRedirectToCompleteProfile } from "@/lib/utils/profile-checker"
+import { getSession } from "@/lib/auth-client"
 
 interface OtpFormProps {
   className?: string
@@ -168,7 +170,29 @@ export function OtpForm({
         if (onComplete) {
           onComplete()
         } else {
-          router.push("/dashboard")
+          // Vérifier si le profil est complet avant de rediriger
+          try {
+            const session = await getSession()
+
+            if (!session?.user?.id) {
+              // Pas de session, rediriger vers login
+              router.push("/login")
+              return
+            }
+
+            const profileStatus = await checkProfileCompletion(session.user.id)
+
+            if (shouldRedirectToCompleteProfile(profileStatus)) {
+              toast.info("Veuillez compléter votre profil")
+              router.push("/complete-profile")
+            } else {
+              router.push("/dashboard")
+            }
+          } catch (error) {
+            console.error("Erreur vérification profil:", error)
+            // En cas d'erreur, rediriger vers complete-profile par sécurité
+            router.push("/complete-profile")
+          }
         }
       } else {
         setError("Code OTP invalide. Veuillez réessayer.")

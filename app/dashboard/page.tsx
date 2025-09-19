@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -40,12 +41,56 @@ import { Separator } from "@radix-ui/react-separator";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [userAvatar, setUserAvatar] = useState("/avatars/avatar-portrait-svgrepo-com.svg");
-  const [userVerification, setUserVerification] = useState({
-    isEmailVerified: true,
-    isDocumentVerified: true
-  });
   const [identityVerificationStatus, setIdentityVerificationStatus] = useState<'not_started' | 'pending' | 'verified' | 'rejected'>('not_started');
+
+  // Récupérer les données utilisateur depuis le store
+  const {
+    user,
+    profile,
+    isLoading,
+    isAuthenticated,
+    isAdmin,
+    isModerator,
+    needsProfileCompletion
+  } = useAuth();
+
+  // Rediriger vers complete-profile si le profil n'est pas complet
+  useEffect(() => {
+    if (needsProfileCompletion) {
+      window.location.href = "/complete-profile";
+    }
+  }, [needsProfileCompletion]);
+
+  // Données utilisateur dérivées du store
+  const userName = profile?.showUsernameByDefault && profile?.username
+    ? profile.username
+    : `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || user?.name || 'Utilisateur';
+
+  const userEmail = user?.email || '';
+  const userAvatar = profile?.avatarUrl || profile?.profileImageUrl || "/avatars/avatar-portrait-svgrepo-com.svg";
+
+  const userVerification = {
+    isEmailVerified: user?.emailVerified || false,
+    isDocumentVerified: false // TODO: À implémenter avec la vérification d'identité
+  };
+
+  // Afficher un loader pendant le chargement
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Rediriger vers login si non authentifié
+  if (!isAuthenticated) {
+    window.location.href = "/login";
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>

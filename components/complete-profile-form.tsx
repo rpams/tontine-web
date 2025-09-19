@@ -11,14 +11,11 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { 
-  User, 
-  MapPin, 
-  Phone, 
-  Upload, 
+import {
+  User,
+  MapPin,
+  Phone,
   Camera,
-  FileText,
   UserCircle2,
   Check,
   Users
@@ -26,6 +23,8 @@ import {
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useUser } from "@/lib/store/user-store"
+import { ErrorAlert } from "@/components/ui/error-alert"
 import { z } from "zod"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
@@ -47,21 +46,19 @@ const completeProfileSchema = z.object({
   }),
   address: z.string().optional(),
   phone: z.string().optional(),
-  profileImage: z.any().optional(),
-  identityDocument: z.any().optional(),
 })
 
 type CompleteProfileFormData = z.infer<typeof completeProfileSchema>
 
 const avatarOptions = [
-  "/avatars/avatar-jjuoud.svg",
-  "/avatars/avatar-jkjnlef.svg",
-  "/avatars/avatar-kjhfefg.svg",
-  "/avatars/avatar-kpdkoe.svg",
-  "/avatars/avatar-azioce.svg",
-  "/avatars/avatar-lnjhsze.svg",
-  "/avatars/avatar-nbxed.svg",
-  "/avatars/avatar-wvesouh.svg"
+  "/avatars/avatar-1.svg",
+  "/avatars/avatar-2.svg",
+  "/avatars/avatar-3.svg",
+  "/avatars/avatar-4.svg",
+  "/avatars/avatar-5.svg",
+  "/avatars/avatar-6.svg",
+  "/avatars/avatar-7.svg",
+  "/avatars/avatar-8.svg"
 ]
 
 export function CompleteProfileForm({
@@ -71,10 +68,14 @@ export function CompleteProfileForm({
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null)
   const [customProfileImage, setCustomProfileImage] = useState<File | null>(null)
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null)
-  const [identityDocument, setIdentityDocument] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState("")
   const [showUsernameByDefault, setShowUsernameByDefault] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  // Store utilisateur
+  const { updateProfile } = useUser()
 
   const {
     register,
@@ -95,6 +96,39 @@ export function CompleteProfileForm({
 
   const username = watch("username")
 
+  // Fonction helper pour upload de fichiers (images de profil uniquement)
+  const uploadFile = async (file: File) => {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'profile')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      return result
+
+    } catch (error) {
+      console.error('Erreur lors de l\'upload:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur de connexion lors de l\'upload'
+      }
+    }
+  }
+
+  // Fonction pour déterminer si l'avatar est prédéfini ou uploadé
+  const isPredefindAvatar = (avatarUrl: string) => {
+    return avatarOptions.includes(avatarUrl)
+  }
+
   const handleProfileImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -109,12 +143,6 @@ export function CompleteProfileForm({
     }
   }
 
-  const handleIdentityDocumentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setIdentityDocument(file)
-    }
-  }
 
   const handleAvatarSelect = (avatar: string) => {
     setSelectedAvatar(avatar)
@@ -154,24 +182,105 @@ export function CompleteProfileForm({
 
   const onSubmit = async (data: CompleteProfileFormData) => {
     setIsLoading(true)
-    
-    // TODO: Implement profile completion logic
-    console.log("Profile data:", {
-      ...data,
-      avatar: selectedAvatar,
-      customProfileImage,
-      identityDocument,
-      phone: phoneNumber ? `+229${phoneNumber}` : "",
-      showUsernameByDefault
-    })
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setIsLoading(false)
-    
-    // Redirect to dashboard
-    window.location.href = "/dashboard"
+    setError(null)
+    setSuccess(null)
+
+    try {
+      // Préparer les données pour l'API
+      const profileData = {
+        username: data.username,
+        gender: data.gender,
+        address: data.address || "",
+        phone: phoneNumber ? `+229${phoneNumber}` : "",
+        avatarUrl: selectedAvatar || "",
+        showUsernameByDefault
+      }
+
+      console.log("Envoi des données profil:", profileData)
+
+      // Gérer l'upload d'image en premier si nécessaire
+      let finalAvatarUrl = profileData.avatarUrl
+
+      if (customProfileImage) {
+        console.log("📤 Upload de l'image de profil personnalisée...")
+        try {
+          const uploadResult = await uploadFile(customProfileImage)
+          if (uploadResult.success) {
+            finalAvatarUrl = uploadResult.url
+            console.log("✅ Image de profil uploadée:", uploadResult.url)
+          } else {
+            setError(uploadResult.error || 'Erreur lors de l\'upload de l\'image')
+            return // Arrêter l'exécution
+          }
+        } catch (uploadError) {
+          console.error('Erreur upload:', uploadError)
+          setError(`Upload d'image échoué: ${uploadError instanceof Error ? uploadError.message : 'Erreur inconnue'}`)
+          return // Arrêter l'exécution
+        }
+      } else if (selectedAvatar && isPredefindAvatar(selectedAvatar)) {
+        console.log("✅ Avatar prédéfini sélectionné:", selectedAvatar)
+        finalAvatarUrl = selectedAvatar
+      }
+
+      // Appel API pour compléter le profil avec l'avatar final
+      const response = await fetch('/api/profile/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...profileData,
+          avatarUrl: finalAvatarUrl
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        // Utiliser le message d'erreur du serveur ou un message par défaut
+        const errorMessage = result?.error || `Erreur ${response.status}: ${response.statusText}`
+        setError(errorMessage)
+        return // Arrêter l'exécution sans lever d'exception
+      }
+
+      console.log("✅ Profil complété avec succès:", result)
+
+      // Mettre à jour le store avec les nouvelles données
+      updateProfile({
+        username: data.username,
+        gender: data.gender,
+        address: data.address || "",
+        phoneNumber: phoneNumber ? `+229${phoneNumber}` : "",
+        avatarUrl: finalAvatarUrl,
+        showUsernameByDefault,
+        isProfileComplete: true
+      })
+
+      // Afficher le message de succès
+      setSuccess("Profil complété avec succès ! Redirection vers le tableau de bord...")
+
+      // Redirection vers le dashboard après un court délai pour voir le succès
+      setTimeout(() => {
+        window.location.href = "/dashboard"
+      }, 2000)
+
+    } catch (error) {
+      console.error('❌ Erreur inattendue lors de la completion du profil:', error)
+
+      // Gérer les erreurs réseau ou inattendues qui n'ont pas été capturées
+      let errorMessage = 'Une erreur inattendue est survenue'
+
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      }
+
+      setError(errorMessage)
+
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const currentProfileImage = profileImagePreview || selectedAvatar
@@ -401,44 +510,48 @@ export function CompleteProfileForm({
                 </div>
               )}
 
-              {/* Document d'identité */}
-              <div className="space-y-2">
-                <Label className="text-base font-semibold flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Document d'identité
-                </Label>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Optionnel - Augmente la limite des transactions
-                </p>
-                
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-muted-foreground/50 transition-colors">
-                  <Input
-                    id="identity-document"
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={handleIdentityDocumentChange}
-                    className="hidden"
-                  />
-                  <Label 
-                    htmlFor="identity-document"
-                    className="cursor-pointer flex flex-col items-center gap-2"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                      <Upload className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {identityDocument ? identityDocument.name : "Cliquez pour télécharger"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        CNI, Passeport, Permis (PDF/Image)
-                      </p>
-                    </div>
-                  </Label>
-                </div>
-              </div>
+              {/* Affichage des erreurs */}
+              {error && (
+                <ErrorAlert
+                  title="Erreur lors de la sauvegarde"
+                  message={error}
+                  onDismiss={() => setError(null)}
+                  variant="error"
+                />
+              )}
 
-              {/* Note de sécurité */}
+              {/* Affichage du succès */}
+              {success && (
+                <ErrorAlert
+                  title="Succès"
+                  message={success}
+                  onDismiss={() => setSuccess(null)}
+                  variant="info"
+                />
+              )}
+
+              {/* Bouton de soumission */}
+              <Button
+                type="submit"
+                disabled={isLoading || !!success}
+                className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Sauvegarde en cours...</span>
+                  </div>
+                ) : success ? (
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5" />
+                    <span>Profil complété !</span>
+                  </div>
+                ) : (
+                  "Terminer et accéder au dashboard"
+                )}
+              </Button>
+
+              {/* Note d'information */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -449,6 +562,9 @@ export function CompleteProfileForm({
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">Vos données sont sécurisées</p>
                     <p>Toutes les informations sont cryptées et stockées de manière sécurisée. Vous pourrez modifier ces informations à tout moment dans vos paramètres.</p>
+                    <p className="mt-2 text-xs">
+                      <strong>Prochaine étape :</strong> Vous pourrez vérifier votre identité depuis le tableau de bord pour augmenter vos limites de transaction.
+                    </p>
                   </div>
                 </div>
               </div>

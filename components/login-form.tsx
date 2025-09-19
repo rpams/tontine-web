@@ -13,7 +13,9 @@ import { Label } from "@/components/ui/label"
 import { User, Lock, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ErrorAlert } from "@/components/ui/error-alert"
 import { signIn } from "@/lib/auth-client"
+import { getAuthErrorMessage, getNetworkErrorMessage, isNetworkError } from "@/lib/utils/auth-errors"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -58,13 +60,23 @@ export function LoginForm({
       })
 
       if (result.error) {
-        setError(result.error.message)
+        // Gestion des erreurs spécifiques de better-auth
+        const errorMessage = getAuthErrorMessage(result.error)
+        setError(errorMessage)
       } else {
         // Rediriger vers la page OTP avec l'email en paramètre
         router.push(`/otp-verification?email=${encodeURIComponent(data.email)}`)
       }
-    } catch (error) {
-      setError("Une erreur est survenue lors de la connexion")
+    } catch (error: any) {
+      console.error("Erreur de connexion:", error)
+
+      // Gestion des erreurs réseau/serveur
+      if (isNetworkError(error)) {
+        setError(getNetworkErrorMessage(error))
+      } else {
+        // Utiliser la fonction de gestion d'erreur auth pour les autres erreurs
+        setError(getAuthErrorMessage(error))
+      }
     } finally {
       setIsLoading(false)
     }
@@ -81,8 +93,12 @@ export function LoginForm({
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
-              {error}
+            <div className="mb-4">
+              <ErrorAlert
+                title="Erreur de connexion"
+                message={error}
+                onDismiss={() => setError("")}
+              />
             </div>
           )}
           <form onSubmit={handleSubmit(onSubmit)}>

@@ -50,23 +50,13 @@ export default function CompleteProfilePage() {
 
         <div className="flex w-full max-w-2xl flex-col gap-4 sm:gap-6">
           <CompleteProfileForm />
-          
-          {/* Actions footer */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <Button 
-              type="submit" 
-              form="complete-profile-form"
-              className="flex-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all"
-            >
-              Terminer et accéder au dashboard
-            </Button>
-            <Link 
-              href="/dashboard"
-              className="sm:w-auto w-full"
-            >
-              <Button 
-                variant="outline" 
-                className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30 py-4 rounded-xl font-medium transition-all"
+
+          {/* Bouton "Continuer plus tard" */}
+          <div className="flex justify-center">
+            <Link href="/dashboard">
+              <Button
+                variant="outline"
+                className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30 py-3 px-6 rounded-xl font-medium transition-all"
               >
                 Continuer plus tard
               </Button>
