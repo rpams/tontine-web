@@ -32,7 +32,13 @@ export function TeamSwitcher({
   const [activeTeam, setActiveTeam] = React.useState(teams[0])
 
   if (!activeTeam) {
-    return null
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <div className="p-2 text-sm text-muted-foreground">No team available</div>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
   }
 
   return (

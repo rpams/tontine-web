@@ -50,7 +50,15 @@ interface UserDetailsModalProps {
 export default function UserDetailsModal({ open, onOpenChange, user }: UserDetailsModalProps) {
   const [activeTab, setActiveTab] = useState("info");
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <div>No user data available</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   // Mock data - à remplacer par de vraies données
   const userDetails = {

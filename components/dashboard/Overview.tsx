@@ -27,11 +27,11 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Clock, 
+import {
+  Users,
+  DollarSign,
+  TrendingUp,
+  Clock,
   Plus,
   Settings,
   Search,
@@ -45,27 +45,121 @@ import {
   Eye
 } from "lucide-react";
 import { useState } from "react";
+import { useDashboardStats, useDashboardTontines, useDashboardTours } from "@/lib/hooks/useDashboard";
+import { DashboardSkeletons } from "./OverviewSkeletons";
 
 export default function Overview() {
   const [activeTab, setActiveTab] = useState("gains");
 
-  // Données complètes pour les sheets
-  const allGains = [
-    { name: "Tontine Famille", tour: 3, date: "Dans 2 jours", amount: "85 000 FCFA", status: "confirmed" },
-    { name: "Épargne Projet", tour: 8, date: "Dans 12 jours", amount: "120 000 FCFA", status: "confirmed" },
-    { name: "Business Fund", tour: 5, date: "Dans 18 jours", amount: "45 000 FCFA", status: "pending" },
-    { name: "Tontine Amis", tour: 2, date: "Dans 25 jours", amount: "30 000 FCFA", status: "pending" },
-    { name: "Épargne Voyage", tour: 7, date: "Dans 30 jours", amount: "75 000 FCFA", status: "confirmed" },
-  ];
+  // États pour la recherche et les filtres
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState<{
+    status: string[];
+    role: string[];
+  }>({
+    status: [],
+    role: []
+  });
 
-  const allContributions = [
-    { name: "Tontine Business", tour: 2, date: "Demain", amount: "25 000 FCFA", status: "pending" },
-    { name: "Épargne Projet", tour: 5, date: "Dans 5 jours", amount: "15 000 FCFA", status: "confirmed" },
-    { name: "Tontine Famille", tour: 4, date: "Dans 9 jours", amount: "10 000 FCFA", status: "confirmed" },
-    { name: "Business Fund", tour: 6, date: "Dans 14 jours", amount: "20 000 FCFA", status: "pending" },
-    { name: "Tontine Amis", tour: 3, date: "Dans 21 jours", amount: "12 000 FCFA", status: "confirmed" },
-    { name: "Épargne Voyage", tour: 8, date: "Dans 28 jours", amount: "18 000 FCFA", status: "pending" },
-  ];
+  // Utiliser les hooks pour récupérer les données
+  const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats();
+  const { data: tontinesData, isLoading: tontinesLoading, error: tontinesError } = useDashboardTontines(20); // Plus de données pour le filtrage
+  const { data: toursData, isLoading: toursLoading, error: toursError } = useDashboardTours();
+
+  // Gestion des erreurs
+  if (statsError || tontinesError || toursError) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="text-red-500 mb-2">Erreur de chargement</div>
+          <p className="text-sm text-gray-600">
+            Impossible de charger les données du tableau de bord
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Affichage du loading
+  if (statsLoading || tontinesLoading || toursLoading) {
+    return <DashboardSkeletons.Overview />;
+  }
+
+  const allTontines = tontinesData?.tontines || [];
+  const gains = toursData?.gains || [];
+  const contributions = toursData?.contributions || [];
+
+  // Fonction de filtrage et recherche
+  const filteredTontines = allTontines.filter(tontine => {
+    // Recherche par nom
+    const matchesSearch = searchQuery === "" ||
+      tontine.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tontine.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Filtrage par statut
+    const matchesStatus = selectedFilters.status.length === 0 ||
+      selectedFilters.status.includes(tontine.status);
+
+    // Filtrage par rôle
+    const matchesRole = selectedFilters.role.length === 0 ||
+      (selectedFilters.role.includes('owner') && tontine.isOwner) ||
+      (selectedFilters.role.includes('participant') && !tontine.isOwner);
+
+    return matchesSearch && matchesStatus && matchesRole;
+  });
+
+  // Fonctions de gestion des filtres
+  const toggleFilter = (type: 'status' | 'role', value: string) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [type]: prev[type].includes(value)
+        ? prev[type].filter(item => item !== value)
+        : [...prev[type], value]
+    }));
+  };
+
+  const removeFilter = (type: 'status' | 'role', value: string) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [type]: prev[type].filter(item => item !== value)
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setSelectedFilters({ status: [], role: [] });
+    setSearchQuery("");
+  };
+
+  // Formatage des données pour compatibilité avec l'affichage existant
+  const allGains = gains.map(gain => ({
+    name: gain.tontineName,
+    tour: gain.roundNumber,
+    date: `Dans ${gain.daysUntil} jour${gain.daysUntil > 1 ? 's' : ''}`,
+    amount: `${gain.amount.toLocaleString('fr-FR')} FCFA`,
+    status: gain.isConfirmed ? "confirmed" : "pending"
+  }));
+
+  const allContributions = contributions.map(contribution => ({
+    name: contribution.tontineName,
+    tour: contribution.roundNumber,
+    date: `Dans ${contribution.daysUntil} jour${contribution.daysUntil > 1 ? 's' : ''}`,
+    amount: `${contribution.amount.toLocaleString('fr-FR')} FCFA`,
+    status: contribution.isConfirmed ? "confirmed" : "pending"
+  }));
+
+  // Configuration des filtres disponibles
+  const filterConfig = {
+    status: [
+      { value: 'ACTIVE', label: 'Active', color: 'green' },
+      { value: 'DRAFT', label: 'Planifiée', color: 'blue' },
+      { value: 'COMPLETED', label: 'Terminée', color: 'gray' },
+      { value: 'CANCELLED', label: 'Annulée', color: 'red' }
+    ],
+    role: [
+      { value: 'owner', label: 'Créateur', icon: Users },
+      { value: 'participant', label: 'Participant', icon: Users }
+    ]
+  };
 
   return (
     <>
@@ -76,7 +170,9 @@ export default function Overview() {
             <span className="text-xs font-medium text-gray-600">Total épargné</span>
             <DollarSign className="h-3 w-3 text-gray-400" />
           </div>
-          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">245 000 FCFA</div>
+          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">
+            {stats?.totalSaved.toLocaleString('fr-FR')} FCFA
+          </div>
           <div className="flex items-center text-xs text-green-600">
             <ArrowUpRight className="w-2.5 h-2.5 mr-1" />
             +20.1% ce mois
@@ -88,10 +184,12 @@ export default function Overview() {
             <span className="text-xs font-medium text-gray-600">Mes tontines</span>
             <Users className="h-3 w-3 text-gray-400" />
           </div>
-          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">8</div>
+          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">
+            {stats?.totalTontines}
+          </div>
           <div className="flex items-center text-xs text-blue-600">
             <ArrowUpRight className="w-2.5 h-2.5 mr-1" />
-            2 nouvelles ce mois
+            {stats?.recentActivity.newTontinesThisMonth} nouvelles ce mois
           </div>
         </div>
 
@@ -100,10 +198,12 @@ export default function Overview() {
             <span className="text-xs font-medium text-gray-600">Prochain tour</span>
             <Clock className="h-3 w-3 text-gray-400" />
           </div>
-          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">5 jours</div>
+          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">
+            {stats?.nextTontine ? `${stats.nextTontine.daysUntil} jours` : 'Aucun'}
+          </div>
           <div className="flex items-center text-xs text-gray-600">
             <Calendar className="w-2.5 h-2.5 mr-1" />
-            Tontine famille
+            {stats?.nextTontine?.name || 'Pas de tour prévu'}
           </div>
         </div>
 
@@ -112,7 +212,9 @@ export default function Overview() {
             <span className="text-xs font-medium text-gray-600">Rendement</span>
             <TrendingUp className="h-3 w-3 text-gray-400" />
           </div>
-          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">12.5%</div>
+          <div className="text-lg font-bold text-gray-900 mb-0.5 font-poppins">
+            {stats?.avgReturn.toFixed(1)}%
+          </div>
           <div className="flex items-center text-xs text-green-600">
             <ArrowUpRight className="w-2.5 h-2.5 mr-1" />
             Très bon
@@ -141,12 +243,14 @@ export default function Overview() {
               <div className="flex items-center gap-3">
                 <div className="relative flex-1 bg-white">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input 
-                    placeholder="Rechercher une tontine..." 
+                  <Input
+                    placeholder="Rechercher une tontine..."
                     className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="w-10 h-10 p-0" size="sm">
@@ -154,147 +258,183 @@ export default function Overview() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56">
-                    <DropdownMenuCheckboxItem checked>
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                      Active
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                      En cours
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                      Planifiée
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
-                      Terminée
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked>
-                      <Users className="w-4 h-4 mr-2" />
-                      Créateur
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      <Users className="w-4 h-4 mr-2" />
-                      Participant
-                    </DropdownMenuCheckboxItem>
+                    {/* Filtres par statut */}
+                    {filterConfig.status.map(statusFilter => (
+                      <DropdownMenuCheckboxItem
+                        key={statusFilter.value}
+                        checked={selectedFilters.status.includes(statusFilter.value)}
+                        onCheckedChange={() => toggleFilter('status', statusFilter.value)}
+                      >
+                        <div className={`w-2 h-2 bg-${statusFilter.color}-500 rounded-full mr-2`}></div>
+                        {statusFilter.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+
+                    {/* Séparateur */}
+                    <div className="h-px bg-gray-200 my-1" />
+
+                    {/* Filtres par rôle */}
+                    {filterConfig.role.map(roleFilter => {
+                      const IconComponent = roleFilter.icon;
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={roleFilter.value}
+                          checked={selectedFilters.role.includes(roleFilter.value)}
+                          onCheckedChange={() => toggleFilter('role', roleFilter.value)}
+                        >
+                          <IconComponent className="w-4 h-4 mr-2" />
+                          {roleFilter.label}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              
+
               {/* Selected Filters as Badges */}
-              <div className="flex items-center gap-2">
-                <div className="flex flex-wrap gap-2 flex-1">
-                  <Badge className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    Active
-                    <X className="w-3 h-3 ml-1 cursor-pointer hover:text-emerald-200" />
-                  </Badge>
-                  <Badge className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white border-blue-500">
-                    <Users className="w-3 h-3" />
-                    Créateur
-                    <X className="w-3 h-3 ml-1 cursor-pointer hover:text-blue-200" />
-                  </Badge>
-                  <Badge className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white border-amber-500">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    En cours
-                    <X className="w-3 h-3 ml-1 cursor-pointer hover:text-amber-200" />
-                  </Badge>
-                  <Badge className="flex items-center gap-1 bg-purple-500 hover:bg-purple-600 text-white border-purple-500">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    Planifiée
-                    <X className="w-3 h-3 ml-1 cursor-pointer hover:text-purple-200" />
-                  </Badge>
+              {(selectedFilters.status.length > 0 || selectedFilters.role.length > 0 || searchQuery) && (
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-2 flex-1">
+                    {/* Badges pour les filtres de statut */}
+                    {selectedFilters.status.map(status => {
+                      const statusConfig = filterConfig.status.find(s => s.value === status);
+                      return (
+                        <Badge
+                          key={status}
+                          className={`flex items-center gap-1 bg-${statusConfig?.color}-500 hover:bg-${statusConfig?.color}-600 text-white border-${statusConfig?.color}-500`}
+                        >
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                          {statusConfig?.label}
+                          <X
+                            className="w-3 h-3 ml-1 cursor-pointer hover:opacity-70"
+                            onClick={() => removeFilter('status', status)}
+                          />
+                        </Badge>
+                      );
+                    })}
+
+                    {/* Badges pour les filtres de rôle */}
+                    {selectedFilters.role.map(role => {
+                      const roleConfig = filterConfig.role.find(r => r.value === role);
+                      if (!roleConfig) return null;
+                      const IconComponent = roleConfig.icon;
+                      return (
+                        <Badge
+                          key={role}
+                          className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
+                        >
+                          <IconComponent className="w-3 h-3" />
+                          {roleConfig.label}
+                          <X
+                            className="w-3 h-3 ml-1 cursor-pointer hover:opacity-70"
+                            onClick={() => removeFilter('role', role)}
+                          />
+                        </Badge>
+                      );
+                    })}
+
+                    {/* Badge pour la recherche */}
+                    {searchQuery && (
+                      <Badge className="flex items-center gap-1 bg-gray-500 hover:bg-gray-600 text-white border-gray-500">
+                        <Search className="w-3 h-3" />
+                        "{searchQuery}"
+                        <X
+                          className="w-3 h-3 ml-1 cursor-pointer hover:opacity-70"
+                          onClick={() => setSearchQuery("")}
+                        />
+                      </Badge>
+                    )}
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-500 hover:text-red-500 p-1 h-auto"
+                    onClick={clearAllFilters}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
-                
-                <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-500 p-1 h-auto">
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
+              )}
             </div>
             <div className="space-y-2">
-              {/* Tontine Item */}
-              <div 
-                className="bg-white p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer" 
-                onClick={() => window.location.href = '/tontines/famille'}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-                      <Users className="w-3 h-3 text-green-600" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 font-poppins">Tontine Famille</h4>
-                      <p className="text-xs text-gray-500">85 000 FCFA</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 text-xs px-2 py-0.5">
-                    En cours
-                  </Badge>
+              {filteredTontines.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  {allTontines.length === 0 ? (
+                    <>
+                      <p className="text-gray-500 text-sm">Aucune tontine trouvée</p>
+                      <p className="text-gray-400 text-xs">Créez votre première tontine</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-500 text-sm">Aucun résultat trouvé</p>
+                      <p className="text-gray-400 text-xs">Essayez de modifier vos critères de recherche</p>
+                    </>
+                  )}
                 </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Dans 5 jours
-                  <span className="mx-2">•</span>
-                  <Users className="w-3 h-3 mr-1" />
-                  12 participants
-                </div>
-              </div>
+              ) : (
+                filteredTontines.slice(0, 3).map((tontine) => {
+                  const statusConfig = {
+                    'ACTIVE': { color: 'green', label: 'En cours' },
+                    'COMPLETED': { color: 'red', label: 'Terminée' },
+                    'DRAFT': { color: 'blue', label: 'À venir' },
+                    'CANCELLED': { color: 'gray', label: 'Annulée' }
+                  };
 
-              {/* More Tontine Items */}
-              <div 
-                className="bg-white p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
-                onClick={() => window.location.href = '/tontines/epargne-projet'}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
-                      <DollarSign className="w-3 h-3 text-blue-600" />
+                  const status = statusConfig[tontine.status as keyof typeof statusConfig] || statusConfig.DRAFT;
+
+                  return (
+                    <div
+                      key={tontine.id}
+                      className="bg-white p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
+                      onClick={() => window.location.href = `/tontines/${tontine.id}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-6 h-6 bg-${status.color}-100 rounded flex items-center justify-center`}>
+                            {tontine.isOwner ? (
+                              <Users className={`w-3 h-3 text-${status.color}-600`} />
+                            ) : (
+                              <DollarSign className={`w-3 h-3 text-${status.color}-600`} />
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900 font-poppins">
+                              {tontine.name}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              {tontine.amountPerRound.toLocaleString('fr-FR')} FCFA
+                            </p>
+                          </div>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className={`bg-${status.color}-100 text-${status.color}-800 border-${status.color}-200 text-xs px-2 py-0.5`}
+                        >
+                          {status.label}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        {tontine.nextRound ? (
+                          <>
+                            <Clock className="w-3 h-3 mr-1" />
+                            Dans {tontine.nextRound.daysUntil} jour{tontine.nextRound.daysUntil > 1 ? 's' : ''}
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="w-3 h-3 mr-1" />
+                            Pas de tour prévu
+                          </>
+                        )}
+                        <span className="mx-2">•</span>
+                        <Users className="w-3 h-3 mr-1" />
+                        {tontine.participantCount} participant{tontine.participantCount > 1 ? 's' : ''}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 font-poppins">Épargne Projet</h4>
-                      <p className="text-xs text-gray-500">120 000 FCFA</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="bg-red-100 text-red-800 border-red-200 text-xs px-2 py-0.5">
-                    Terminée
-                  </Badge>
-                </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Il y a 3 jours
-                  <span className="mx-2">•</span>
-                  <Users className="w-3 h-3 mr-1" />
-                  8 participants
-                </div>
-              </div>
-              
-              <div 
-                className="bg-white p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
-                onClick={() => window.location.href = '/tontines/business'}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
-                      <TrendingUp className="w-3 h-3 text-purple-600" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 font-poppins">Tontine Business</h4>
-                      <p className="text-xs text-gray-500">25 000 FCFA</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 text-xs px-2 py-0.5">
-                    À venir
-                  </Badge>
-                </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  Dans 3 jours
-                  <span className="mx-2">•</span>
-                  <Users className="w-3 h-3 mr-1" />
-                  6 participants
-                </div>
-              </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
@@ -324,54 +464,53 @@ export default function Overview() {
               
               <TabsContent value="gains" className="mt-4">
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-green-50 border border-green-300 px-4">
-                    <Trophy className="w-4 h-4 text-green-600" />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-green-900">Tontine Famille</div>
-                      <div className="text-xs text-green-700">Tour 3 - Dans 2 jours</div>
-                      <div className="text-xs text-green-600 font-medium">85 000 FCFA</div>
+                  {gains.length === 0 ? (
+                    <div className="text-center py-6">
+                      <Trophy className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">Aucun gain prévu</p>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-green-50 border border-green-300 px-4">
-                    <Trophy className="w-4 h-4 text-green-600" />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-green-900">Épargne Projet</div>
-                      <div className="text-xs text-green-700">Tour 8 - Dans 12 jours</div>
-                      <div className="text-xs text-green-600 font-medium">120 000 FCFA</div>
-                    </div>
-                  </div>
+                  ) : (
+                    gains.slice(0, 2).map((gain) => (
+                      <div key={gain.id} className="flex items-center space-x-3 p-2 rounded-lg bg-green-50 border border-green-300 px-4">
+                        <Trophy className="w-4 h-4 text-green-600" />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-green-900">{gain.tontineName}</div>
+                          <div className="text-xs text-green-700">
+                            Tour {gain.roundNumber} - Dans {gain.daysUntil} jour{gain.daysUntil > 1 ? 's' : ''}
+                          </div>
+                          <div className="text-xs text-green-600 font-medium">
+                            {gain.amount.toLocaleString('fr-FR')} FCFA
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="contributions" className="mt-4">
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-blue-50 border border-blue-300 px-4">
-                    <Coins className="w-4 h-4 text-blue-600" />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-blue-900">Tontine Business</div>
-                      <div className="text-xs text-blue-700">Tour 2 - Demain</div>
-                      <div className="text-xs text-blue-600 font-medium">25 000 FCFA</div>
+                  {contributions.length === 0 ? (
+                    <div className="text-center py-6">
+                      <Coins className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">Aucune contribution prévue</p>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-blue-50 border border-blue-300 px-4">
-                    <Coins className="w-4 h-4 text-blue-600" />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-blue-900">Épargne Projet</div>
-                      <div className="text-xs text-blue-700">Tour 5 - Dans 5 jours</div>
-                      <div className="text-xs text-blue-600 font-medium">15 000 FCFA</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-2 rounded-lg bg-blue-50 border border-blue-300 px-4">
-                    <Coins className="w-4 h-4 text-blue-600" />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-blue-900">Tontine Famille</div>
-                      <div className="text-xs text-blue-700">Tour 4 - Dans 9 jours</div>
-                      <div className="text-xs text-blue-600 font-medium">10 000 FCFA</div>
-                    </div>
-                  </div>
+                  ) : (
+                    contributions.slice(0, 3).map((contribution) => (
+                      <div key={contribution.id} className="flex items-center space-x-3 p-2 rounded-lg bg-blue-50 border border-blue-300 px-4">
+                        <Coins className="w-4 h-4 text-blue-600" />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-blue-900">{contribution.tontineName}</div>
+                          <div className="text-xs text-blue-700">
+                            Tour {contribution.roundNumber} - Dans {contribution.daysUntil} jour{contribution.daysUntil > 1 ? 's' : ''}
+                          </div>
+                          <div className="text-xs text-blue-600 font-medium">
+                            {contribution.amount.toLocaleString('fr-FR')} FCFA
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
@@ -495,27 +634,6 @@ export default function Overview() {
               </Sheet>
             </div>
           </div>
-          
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Actions rapides</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full justify-start">
-                <Plus className="w-4 h-4 mr-2" />
-                Créer une tontine
-              </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start">
-                <Users className="w-4 h-4 mr-2" />
-                Inviter des amis
-              </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start">
-                <Settings className="w-4 h-4 mr-2" />
-                Paramètres
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
+import { BetterAuthProvider } from "@/components/providers/better-auth-provider"
+import QueryProvider from "@/lib/providers/query-provider"
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -37,8 +39,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${poppins.variable} font-inter antialiased`}
       >
-        {children}
-        <Toaster />
+        <BetterAuthProvider>
+          <QueryProvider>
+            {children}
+            <Toaster />
+          </QueryProvider>
+        </BetterAuthProvider>
       </body>
     </html>
   );

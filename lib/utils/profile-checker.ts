@@ -1,50 +1,20 @@
-import { prisma } from "@/lib/prisma"
-
 export interface ProfileCompletionStatus {
   isComplete: boolean
   missingFields: string[]
   completionPercentage: number
 }
 
-export async function checkProfileCompletion(userId: string): Promise<ProfileCompletionStatus> {
+// Fonction côté client pour récupérer le statut de completion du profil
+export async function checkProfileCompletion(): Promise<ProfileCompletionStatus> {
   try {
-    const profile = await prisma.userProfile.findUnique({
-      where: { userId }
-    })
+    const response = await fetch('/api/profile/check-completion')
+    const result = await response.json()
 
-    if (!profile) {
-      return {
-        isComplete: false,
-        missingFields: ['profile'],
-        completionPercentage: 0
-      }
+    if (!response.ok) {
+      throw new Error(result.error || 'Erreur de récupération')
     }
 
-    // Champs obligatoires pour un profil complet
-    const requiredFields = {
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      dateOfBirth: profile.dateOfBirth,
-      phoneNumber: profile.phoneNumber,
-      address: profile.address,
-      city: profile.city,
-      country: profile.country
-    }
-
-    // Champs manquants
-    const missingFields = Object.entries(requiredFields)
-      .filter(([_, value]) => !value)
-      .map(([field]) => field)
-
-    const totalFields = Object.keys(requiredFields).length
-    const completedFields = totalFields - missingFields.length
-    const completionPercentage = Math.round((completedFields / totalFields) * 100)
-
-    return {
-      isComplete: missingFields.length === 0,
-      missingFields,
-      completionPercentage
-    }
+    return result.data
   } catch (error) {
     console.error('Erreur lors de la vérification du profil:', error)
     return {

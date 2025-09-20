@@ -180,7 +180,7 @@ export function OtpForm({
               return
             }
 
-            const profileStatus = await checkProfileCompletion(session.user.id)
+            const profileStatus = await checkProfileCompletion()
 
             if (shouldRedirectToCompleteProfile(profileStatus)) {
               toast.info("Veuillez compléter votre profil")

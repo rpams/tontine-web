@@ -52,7 +52,15 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [editableOrder, setEditableOrder] = useState<any[]>([]);
 
-  if (!tontine) return null;
+  if (!tontine) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <div>No tontine data available</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   // Initialize editable order when entering edit mode (exclude current winner - they're next and can't be changed)
   const startEditing = () => {

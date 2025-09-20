@@ -21,7 +21,7 @@ export function useProfileGuard(redirectTo: string = "/complete-profile") {
       }
 
       try {
-        const profileStatus = await checkProfileCompletion(session.user.id)
+        const profileStatus = await checkProfileCompletion()
 
         if (shouldRedirectToCompleteProfile(profileStatus)) {
           router.push(redirectTo)

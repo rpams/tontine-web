@@ -37,6 +37,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useUser } from "@/lib/store/user-store";
+import { useAvailableAvatars, useUpdateAvatar, useUploadAvatar } from "@/lib/hooks/useProfile";
 
 interface ProfileProps {
   onAvatarChange?: (avatar: string) => void;
@@ -44,34 +46,45 @@ interface ProfileProps {
 }
 
 export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "Jean Dupont",
-    email: "jean.dupont@email.com",
-    phone: "+229 97 12 34 56",
-    gender: "Homme",
-    address: "Quartier Fidjrossè, Cotonou, Bénin",
-    joinDate: "Janvier 2024",
-    document: "/images/id.jpg", // "/images/id.jpg" pour tester avec une image - mettre null pour non vérifié
-    avatar: currentAvatar || "/avatars/avatar-portrait-svgrepo-com.svg",
-    isEmailVerified: true,
-    isDocumentVerified: true // sera true si document existe et est vérifié
-  });
-  
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState(formData.avatar);
-  
-  // Liste des avatars disponibles
-  const availableAvatars = [
-    "/avatars/avatar-jjuoud.svg",
-    "/avatars/avatar-jkjnlef.svg",
-    "/avatars/avatar-kjhfefg.svg",
-    "/avatars/avatar-kpdkoe.svg",
-    "/avatars/avatar-azioce.svg",
-    "/avatars/avatar-lnjhsze.svg",
-    "/avatars/avatar-nbxed.svg",
-    "/avatars/avatar-wvesouh.svg"
+  // Utilisation des hooks existants
+  const { user, profile } = useUser()
+  const { data: avatarsData, isLoading: avatarsLoading } = useAvailableAvatars()
+  const updateAvatarMutation = useUpdateAvatar()
+  const uploadAvatarMutation = useUploadAvatar()
+
+  // États locaux
+  const [isEditing, setIsEditing] = useState(false)
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [selectedAvatar, setSelectedAvatar] = useState(profile?.avatarUrl || currentAvatar || "/avatars/avatar-1.svg")
+
+  // Données du profil utilisateur (avec fallbacks)
+  const userData = {
+    name: user?.name || "Utilisateur",
+    email: user?.email || "",
+    phone: profile?.phoneNumber || "",
+    gender: profile?.gender || "",
+    address: profile?.address || "",
+    joinDate: user ? new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : "",
+    document: null, // TODO: Gérer les documents d'identité
+    avatar: profile?.avatarUrl || currentAvatar || "/avatars/avatar-1.svg",
+    isEmailVerified: user?.emailVerified || false,
+    isDocumentVerified: false // TODO: Implémenter la vérification de documents
+  }
+
+  // États pour le formulaire (basés sur les vraies données)
+  const [formData, setFormData] = useState(userData)
+
+  // Liste des avatars disponibles (depuis l'API ou fallback avec les vrais noms)
+  const availableAvatars = avatarsData?.avatars || [
+    { url: "/avatars/avatar-1.svg", name: "avatar-1.svg", id: "avatar-1" },
+    { url: "/avatars/avatar-2.svg", name: "avatar-2.svg", id: "avatar-2" },
+    { url: "/avatars/avatar-3.svg", name: "avatar-3.svg", id: "avatar-3" },
+    { url: "/avatars/avatar-4.svg", name: "avatar-4.svg", id: "avatar-4" },
+    { url: "/avatars/avatar-5.svg", name: "avatar-5.svg", id: "avatar-5" },
+    { url: "/avatars/avatar-6.svg", name: "avatar-6.svg", id: "avatar-6" },
+    { url: "/avatars/avatar-7.svg", name: "avatar-7.svg", id: "avatar-7" },
+    { url: "/avatars/avatar-8.svg", name: "avatar-8.svg", id: "avatar-8" }
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -127,13 +140,7 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
 
   const handleAvatarUpload = (file: File) => {
     if (file && file.type.startsWith('image/')) {
-      // Vérifier la taille du fichier (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Le fichier est trop volumineux. Maximum 5MB autorisé.");
-        return;
-      }
-
-      // Créer une URL de prévisualisation locale
+      // Créer une URL de prévisualisation locale pour l'affichage immédiat
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -142,23 +149,39 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
         }
       };
       reader.readAsDataURL(file);
-
-      // TODO: Implémenter l'upload réel vers le serveur
-      // const formData = new FormData();
-      // formData.append('avatar', file);
-      // uploadToServer(formData);
     } else {
       alert("Veuillez sélectionner une image valide (PNG, JPG, etc.)");
     }
   };
 
-  const handleAvatarSave = () => {
-    setFormData(prev => ({ ...prev, avatar: selectedAvatar }));
-    // Notifier le parent du changement d'avatar
-    if (onAvatarChange) {
-      onAvatarChange(selectedAvatar);
+  const handleAvatarSave = async () => {
+    try {
+      // Si l'avatar sélectionné est une data URL (upload personnalisé)
+      if (selectedAvatar.startsWith('data:')) {
+        // Convertir le data URL en File pour l'upload
+        const response = await fetch(selectedAvatar);
+        const blob = await response.blob();
+        const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+
+        await uploadAvatarMutation.mutateAsync(file);
+      } else {
+        // Avatar prédéfini
+        await updateAvatarMutation.mutateAsync(selectedAvatar);
+      }
+
+      // Mettre à jour les données locales
+      setFormData(prev => ({ ...prev, avatar: selectedAvatar }));
+
+      // Notifier le parent du changement d'avatar
+      if (onAvatarChange) {
+        onAvatarChange(selectedAvatar);
+      }
+
+      setIsAvatarModalOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de l\'avatar:', error);
+      alert(error instanceof Error ? error.message : 'Erreur lors de la sauvegarde');
     }
-    setIsAvatarModalOpen(false);
   };
 
   const handleAvatarCancel = () => {
@@ -504,57 +527,66 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
             <div>
               <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Avatars prédéfinis</Label>
               <div className="flex flex-wrap gap-2 sm:gap-y-3 sm:space-x-3">
-                {availableAvatars.map((avatar, index) => {
-                  const borderColors = [
-                    'border-blue-500',
-                    'border-green-500', 
-                    'border-purple-500',
-                    'border-orange-500',
-                    'border-pink-500',
-                    'border-indigo-500',
-                    'border-red-500',
-                    'border-teal-500'
-                  ];
-                  const bgColors = [
-                    'bg-blue-50',
-                    'bg-green-50',
-                    'bg-purple-50', 
-                    'bg-orange-50',
-                    'bg-pink-50',
-                    'bg-indigo-50',
-                    'bg-red-50',
-                    'bg-teal-50'
-                  ];
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedAvatar(avatar)}
-                      className="relative transition-all hover:scale-105"
-                    >
-                      {/* Cercle avec bordure colorée */}
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedAvatar === avatar 
-                          ? `${borderColors[index]} ${bgColors[index]} shadow-lg` 
-                          : `${borderColors[index]} bg-white hover:${bgColors[index]}`
-                      }`}>
-                        {/* Avatar à l'intérieur du cercle */}
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden">
-                          <img 
-                            src={avatar} 
-                            alt={`Avatar ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
+                {avatarsLoading ? (
+                  // Skeleton loading pour les avatars
+                  Array.from({ length: 8 }, (_, i) => (
+                    <div key={i} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-200 animate-pulse" />
+                  ))
+                ) : (
+                  availableAvatars.map((avatar, index) => {
+                    const borderColors = [
+                      'border-blue-500',
+                      'border-green-500',
+                      'border-purple-500',
+                      'border-orange-500',
+                      'border-pink-500',
+                      'border-indigo-500',
+                      'border-red-500',
+                      'border-teal-500'
+                    ];
+                    const bgColors = [
+                      'bg-blue-50',
+                      'bg-green-50',
+                      'bg-purple-50',
+                      'bg-orange-50',
+                      'bg-pink-50',
+                      'bg-indigo-50',
+                      'bg-red-50',
+                      'bg-teal-50'
+                    ];
+
+                    const avatarUrl = typeof avatar === 'string' ? avatar : avatar.url;
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedAvatar(avatarUrl)}
+                        className="relative transition-all hover:scale-105"
+                      >
+                        {/* Cercle avec bordure colorée */}
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center transition-all ${
+                          selectedAvatar === avatarUrl
+                            ? `${borderColors[index]} ${bgColors[index]} shadow-lg`
+                            : `${borderColors[index]} bg-white hover:${bgColors[index]}`
+                        }`}>
+                          {/* Avatar à l'intérieur du cercle */}
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden">
+                            <img
+                              src={avatarUrl}
+                              alt={`Avatar ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      {selectedAvatar === avatar && (
-                        <div className="absolute -top-0.5 -right-1 sm:-top-1 sm:-right-2 h-3 w-3 sm:h-3.5 sm:w-3.5 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
-                          <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-white" />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+                        {selectedAvatar === avatarUrl && (
+                          <div className="absolute -top-0.5 -right-1 sm:-top-1 sm:-right-2 h-3 w-3 sm:h-3.5 sm:w-3.5 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
+                            <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -596,14 +628,14 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
               <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Prévisualisation</Label>
               <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
-                  <img 
-                    src={selectedAvatar} 
+                  <img
+                    src={selectedAvatar}
                     alt="Prévisualisation avatar"
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm sm:text-base font-medium text-gray-900 truncate">Jean Dupont</p>
+                  <p className="text-sm sm:text-base font-medium text-gray-900 truncate">{userData.name}</p>
                   <p className="text-xs sm:text-sm text-gray-500">Aperçu de votre profil</p>
                 </div>
               </div>
@@ -614,12 +646,13 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
             <Button variant="outline" onClick={handleAvatarCancel} className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">
               Annuler
             </Button>
-            <Button 
-              onClick={handleAvatarSave} 
-              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white font-semibold text-xs sm:text-sm h-8 sm:h-9 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+            <Button
+              onClick={handleAvatarSave}
+              disabled={updateAvatarMutation.isPending || uploadAvatarMutation.isPending}
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white font-semibold text-xs sm:text-sm h-8 sm:h-9 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-              Sauvegarder
+              {(updateAvatarMutation.isPending || uploadAvatarMutation.isPending) ? 'Sauvegarde...' : 'Sauvegarder'}
             </Button>
           </DialogFooter>
         </DialogContent>
