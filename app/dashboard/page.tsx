@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,6 +43,7 @@ import { Separator } from "@radix-ui/react-separator";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [identityVerificationStatus, setIdentityVerificationStatus] = useState<'not_started' | 'pending' | 'verified' | 'rejected'>('not_started');
+  const router = useRouter();
 
   // Récupérer les données utilisateur depuis le store
   const {
@@ -57,9 +59,9 @@ export default function Dashboard() {
   // Rediriger vers complete-profile si le profil n'est pas complet
   useEffect(() => {
     if (needsProfileCompletion) {
-      window.location.href = "/complete-profile";
+      router.push("/complete-profile");
     }
-  }, [needsProfileCompletion]);
+  }, [needsProfileCompletion, router]);
 
   // Données utilisateur dérivées du store
   const userName = profile?.showUsernameByDefault && profile?.username
@@ -87,8 +89,13 @@ export default function Dashboard() {
   }
 
   // Rediriger vers login si non authentifié
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
   if (!isAuthenticated) {
-    window.location.href = "/login";
     return null;
   }
 
