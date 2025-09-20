@@ -65,6 +65,76 @@ export interface Tontine {
   }
 }
 
+// Interface pour les détails complets d'une tontine
+export interface TontineDetail extends Omit<Tontine, 'participants' | 'nextRound'> {
+  allowMultipleShares: boolean
+  maxSharesPerUser: number | null
+  inviteCode: string
+  completedRounds: number
+  completionPercentage: number
+
+  // Participants avec statistiques détaillées
+  participants: TontineParticipantDetail[]
+
+  // Rounds avec détails complets
+  rounds: TontineRoundDetail[]
+
+  // Prochain round avec détails
+  nextRound: TontineRoundDetail | null
+}
+
+export interface TontineParticipantDetail extends TontineParticipant {
+  firstName?: string
+  lastName?: string
+
+  // Statistiques de paiement
+  totalPayments: number
+  paidPayments: number
+  pendingPayments: number
+  isUpToDate: boolean
+
+  // Rounds gagnés
+  wonRounds: TontineRoundDetail[]
+}
+
+export interface TontineRoundDetail extends TontineRound {
+  distributedAmount: number
+  collectionStartDate: string
+  completedAt: string | null
+  createdAt: string
+  updatedAt: string
+
+  // Détails du gagnant
+  winner: {
+    id: string
+    userId: string
+    name: string
+    email: string
+    firstName?: string
+    lastName?: string
+    avatarUrl?: string
+  } | null
+
+  // Statistiques des paiements
+  totalExpected: number
+  totalCollected: number
+  paymentsReceived: number
+  totalParticipants: number
+  isFullyPaid: boolean
+
+  // Détails des paiements pour ce round
+  payments: {
+    id: string
+    amount: number
+    status: string
+    paidAt: string | null
+    user: {
+      id: string
+      name: string
+    }
+  }[]
+}
+
 export interface TontinesResponse {
   tontines: Tontine[]
   pagination: {
@@ -148,9 +218,9 @@ export function useCreateTontine() {
   })
 }
 
-// Hook pour une tontine spécifique
+// Hook pour une tontine spécifique avec détails complets
 export function useTontine(tontineId: string) {
-  return useQuery<Tontine>({
+  return useQuery<{ tontine: TontineDetail }>({
     queryKey: ['tontines', tontineId],
     queryFn: async () => {
       const response = await fetch(`/api/tontines/${tontineId}`, {

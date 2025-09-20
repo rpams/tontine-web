@@ -215,8 +215,8 @@ export default function Payments() {
     );
   }
 
-  // Affichage du loading
-  if (isLoading) {
+  // Affichage du loading seulement si aucune donnée n'est disponible
+  if (isLoading && !paymentsData) {
     return <PaymentSkeletons.Full />;
   }
 

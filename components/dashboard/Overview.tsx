@@ -80,8 +80,8 @@ export default function Overview() {
     );
   }
 
-  // Affichage du loading
-  if (statsLoading || tontinesLoading || toursLoading) {
+  // Affichage du loading seulement si aucune donnée n'est disponible
+  if ((statsLoading && !stats) || (tontinesLoading && !tontinesData) || (toursLoading && !toursData)) {
     return <DashboardSkeletons.Overview />;
   }
 

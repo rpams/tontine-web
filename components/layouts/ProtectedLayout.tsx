@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
 import { authClient } from "@/lib/auth-client"
 import { useAuth } from "@/lib/hooks/useAuth"
+import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton"
 
 interface ProtectedLayoutProps {
   children: React.ReactNode
@@ -31,6 +32,12 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
 
   // Afficher un loader pendant la vérification
   if (sessionLoading || authLoading) {
+    // Afficher le skeleton du dashboard si on est sur la page dashboard
+    if (pathname === "/dashboard") {
+      return <DashboardSkeleton />
+    }
+
+    // Sinon, afficher le loader générique
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

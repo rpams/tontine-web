@@ -187,8 +187,8 @@ export default function Tontines() {
     );
   }
 
-  // Affichage du loading
-  if (isLoading) {
+  // Affichage du loading seulement si aucune donnée n'est disponible
+  if (isLoading && !tontinesData) {
     return <TontineSkeletons.Full />;
   }
 
