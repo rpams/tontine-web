@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useUser } from '@/lib/store/user-store'
-import { auth } from '@/lib/auth'
 
 // Hook pour gérer l'authentification et synchroniser avec le store
 export const useAuth = () => {
@@ -24,32 +23,55 @@ export const useAuth = () => {
     try {
       setLoading(true)
 
-      // Récupérer la session
-      const session = await auth.api.getSession()
+      // Récupérer la session via l'API route
+      const sessionResponse = await fetch('/api/auth/session')
 
-      if (!session) {
+      if (!sessionResponse.ok) {
         logout()
         return null
       }
 
-      // Synchroniser avec le store
-      setUser({
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        role: (session.user as any).role || 'USER',
-        image: session.user.image || undefined,
-        isActive: true,
-        emailVerified: session.user.emailVerified || false,
-        lastLoginAt: new Date(),
-        loginCount: 0,
-      })
+      const sessionData = await sessionResponse.json()
 
-      // Récupérer le profil utilisateur
-      const profileResponse = await fetch('/api/profile/me')
-      if (profileResponse.ok) {
-        const profileData = await profileResponse.json()
-        setProfile(profileData.profile)
+      if (!sessionData.session) {
+        logout()
+        return null
+      }
+
+      const session = sessionData.session
+
+      // Récupérer les données utilisateur complètes (user + profile)
+      const userResponse = await fetch('/api/profile/me')
+      if (userResponse.ok) {
+        const userData = await userResponse.json()
+
+        // Synchroniser avec le store
+        setUser({
+          id: userData.user.id,
+          email: userData.user.email,
+          name: userData.user.name,
+          role: userData.user.role || 'USER',
+          image: userData.user.image || undefined,
+          isActive: userData.user.isActive,
+          emailVerified: userData.user.emailVerified,
+          lastLoginAt: userData.user.lastLoginAt ? new Date(userData.user.lastLoginAt) : null,
+          loginCount: userData.user.loginCount,
+        })
+
+        setProfile(userData.profile)
+      } else {
+        // Fallback avec les données de session
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.name,
+          role: (session.user as any).role || 'USER',
+          image: session.user.image || undefined,
+          isActive: true,
+          emailVerified: session.user.emailVerified || false,
+          lastLoginAt: new Date(),
+          loginCount: 0,
+        })
       }
 
       return session
@@ -96,7 +118,7 @@ export const useAuth = () => {
   // Fonction de déconnexion
   const signOut = async () => {
     try {
-      await auth.api.signOut()
+      await fetch('/api/auth/sign-out', { method: 'POST' })
       logout()
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error)
