@@ -10,13 +10,21 @@ function OtpVerificationContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
+  const devOtp = searchParams.get('devOtp')
+  const redirect = searchParams.get('redirect')
 
   const handleBack = () => {
     router.push('/login')
   }
 
   const handleComplete = () => {
-    router.push('/dashboard')
+    // Si une URL de redirection est fournie, l'utiliser
+    // Sinon, aller vers le dashboard par défaut
+    if (redirect) {
+      router.push(redirect)
+    } else {
+      router.push('/dashboard')
+    }
   }
 
   return (
@@ -40,6 +48,7 @@ function OtpVerificationContent() {
         <div className="w-full max-w-sm">
           <OtpForm
             email={email || ''}
+            initialDevOtp={devOtp || undefined}
             onBack={handleBack}
             onComplete={handleComplete}
           />

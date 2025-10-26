@@ -29,6 +29,7 @@ import { getSession } from "@/lib/auth-client"
 interface OtpFormProps {
   className?: string
   email?: string
+  initialDevOtp?: string
   onBack?: () => void
   onComplete?: () => void
 }
@@ -36,6 +37,7 @@ interface OtpFormProps {
 export function OtpForm({
   className,
   email,
+  initialDevOtp,
   onBack,
   onComplete,
   ...props
@@ -47,8 +49,16 @@ export function OtpForm({
   const [timeLeft, setTimeLeft] = useState(180) // 3 minutes (standard industrie)
   const [canResend, setCanResend] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
+  const [devOtpCode, setDevOtpCode] = useState<string>("")
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const router = useRouter()
+
+  // Initialiser le code OTP en mode développement
+  useEffect(() => {
+    if (initialDevOtp && process.env.NODE_ENV === 'development') {
+      setDevOtpCode(initialDevOtp)
+    }
+  }, [initialDevOtp])
 
   // Timer pour l'expiration du code
   useEffect(() => {
@@ -238,6 +248,11 @@ export function OtpForm({
       if (result.success) {
         toast.success("Un nouveau code OTP a été envoyé à votre email")
 
+        // En mode dev, stocker le code OTP reçu
+        if (result.devOtp) {
+          setDevOtpCode(result.devOtp)
+        }
+
         // Réinitialiser les timers
         setTimeLeft(180) // 3 minutes
         setCanResend(false)
@@ -395,9 +410,31 @@ export function OtpForm({
             </div>
 
             {/* Code de test pour développement */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                <strong>Mode DEV :</strong> Le code OTP est {otp.join("") || "1234"}
+            {process.env.NODE_ENV === 'development' && devOtpCode && (
+              <div className="mt-2 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-yellow-900 mb-1">
+                      🔑 Mode DEV - Code OTP
+                    </p>
+                    <p className="text-2xl font-bold text-yellow-700 tracking-wider font-mono">
+                      {devOtpCode}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const otpArray = devOtpCode.split("")
+                      setOtp(otpArray)
+                      // Auto-submit après avoir rempli
+                      setTimeout(() => handleSubmit(devOtpCode), 100)
+                    }}
+                    className="text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-900"
+                  >
+                    Remplir auto
+                  </Button>
+                </div>
               </div>
             )}
           </div>

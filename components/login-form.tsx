@@ -22,10 +22,15 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
 import Image from "next/image"
 
+interface LoginFormProps extends React.ComponentProps<"div"> {
+  redirectUrl?: string
+}
+
 export function LoginForm({
   className,
+  redirectUrl,
   ...props
-}: React.ComponentProps<"div">) {
+}: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -81,7 +86,17 @@ export function LoginForm({
           }
 
           // Rediriger vers la page OTP avec l'email en paramètre
-          router.push(`/otp-verification?email=${encodeURIComponent(data.email)}`)
+          // En mode dev, passer aussi le code OTP pour faciliter les tests
+          let otpUrl = `/otp-verification?email=${encodeURIComponent(data.email)}${
+            otpResult.devOtp ? `&devOtp=${otpResult.devOtp}` : ''
+          }`
+
+          // Si une URL de redirection est fournie, la passer à la page OTP
+          if (redirectUrl) {
+            otpUrl += `&redirect=${encodeURIComponent(redirectUrl)}`
+          }
+
+          router.push(otpUrl)
         } catch (otpError) {
           console.error("Erreur génération OTP:", otpError)
           setError("Erreur lors de l'envoi du code de vérification")
@@ -105,19 +120,19 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className=" backdrop-blur-sm bg-white/98 dark:bg-gray-950/95 shadow-2xl">
-        <CardHeader className="flex items-center gap-5">
+        <CardHeader className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-left">
           <Image
             src="/images/logo.png"
             alt="Tontine"
             width={100}
             height={43}
-            className="h-18 w-auto"
+            className="h-12 sm:h-16 w-auto flex-shrink-0"
           />
-          <div>
-          <CardTitle className="text-xl">Se connecter</CardTitle>
-          <CardDescription>
-            Entrez votre email ci-dessous pour vous connecter à votre compte
-          </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-lg sm:text-xl font-semibold">Se connecter</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Entrez votre email ci-dessous pour vous connecter à votre compte
+            </CardDescription>
           </div>
         </CardHeader>
         <CardContent>

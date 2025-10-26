@@ -617,7 +617,7 @@ export default function TontineDetail() {
                     })
                   }
                   {tontine.rounds.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-gray-500 bg-white">
                       <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                       <p>Aucun tour créé pour cette tontine</p>
                     </div>
@@ -707,7 +707,7 @@ export default function TontineDetail() {
                     );
                   })}
                   {tontine.participants.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-gray-500 bg-white">
                       <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                       <p>Aucun participant dans cette tontine</p>
                     </div>
@@ -780,7 +780,7 @@ export default function TontineDetail() {
                                   </div>
                                 </div>
                               ) : (
-                                <div>
+                                <div className="bg-white">
                                   <h4 className="font-medium text-gray-900 text-sm">Aucun gagnant désigné</h4>
                                   <p className="text-xs text-gray-500">Tour {round.roundNumber} • {formatDate(round.dueDate)}</p>
                                 </div>
@@ -804,7 +804,7 @@ export default function TontineDetail() {
                     })
                   }
                   {tontine.rounds.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-gray-500 bg-white">
                       <Crown className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                       <p>Aucun ordre de gagnant défini</p>
                     </div>
@@ -945,7 +945,7 @@ export default function TontineDetail() {
                   })()
                   }
                   {tontine.rounds.length === 0 && tontine.participants.length <= 1 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-gray-500 bg-white">
                       <History className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                       <p>Aucun historique disponible</p>
                     </div>

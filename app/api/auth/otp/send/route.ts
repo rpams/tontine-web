@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Code OTP envoyé avec succès',
+      // En mode développement, retourner le code pour les tests
+      ...(process.env.NODE_ENV === 'development' && { devOtp: otp }),
     });
 
   } catch (error) {

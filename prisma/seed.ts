@@ -1,5 +1,6 @@
 import { PrismaClient } from '../lib/generated/prisma'
 import { auth } from '../lib/auth'
+import { generateInviteCode } from '../lib/utils/invite-code'
 
 const prisma = new PrismaClient()
 
@@ -153,6 +154,8 @@ async function main() {
     dateOfBirth: new Date('1985-03-15'),
   })
 
+  // EDUZVS
+
   // Users vérifiés (participent aux tontines)
   const amadou = await createUser({
     name: 'Amadou DIOP',
@@ -257,9 +260,11 @@ async function main() {
       maxParticipants: 4,
       allowMultipleShares: false,
       maxSharesPerUser: 1,
+      inviteCode: generateInviteCode(),
       creatorId: amadou.id,
     },
   })
+  console.log(`   📋 Code d'invitation: ${tontineEte.inviteCode}`)
 
   // Participants tontine été
   const partEte1 = await prisma.tontineParticipant.create({
@@ -588,9 +593,11 @@ async function main() {
       maxParticipants: 3,
       allowMultipleShares: false,
       maxSharesPerUser: 1,
+      inviteCode: generateInviteCode(),
       creatorId: amadou.id,
     },
   })
+  console.log(`   📋 Code d'invitation: ${tontineFamille.inviteCode}`)
 
   // Participants
   const partFam1 = await prisma.tontineParticipant.create({
@@ -795,9 +802,11 @@ async function main() {
       maxParticipants: 4,
       allowMultipleShares: false,
       maxSharesPerUser: 1,
+      inviteCode: generateInviteCode(),
       creatorId: fatou.id,
     },
   })
+  console.log(`   📋 Code d'invitation: ${tontineEtudiants.inviteCode}`)
 
   // Participants
   const partEtu1 = await prisma.tontineParticipant.create({
@@ -1092,9 +1101,11 @@ async function main() {
       maxParticipants: 3,
       allowMultipleShares: false,
       maxSharesPerUser: 1,
+      inviteCode: generateInviteCode(),
       creatorId: moussa.id,
     },
   })
+  console.log(`   📋 Code d'invitation: ${tontineFinAnnee.inviteCode}`)
 
   // Participants (déjà inscrits mais tontine pas encore démarrée)
   const partFin1 = await prisma.tontineParticipant.create({

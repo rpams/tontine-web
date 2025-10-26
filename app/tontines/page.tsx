@@ -41,8 +41,14 @@ import {
   Key,
   ExternalLink,
   Mail,
+  BadgeCheck,
+  Shield,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import Link from "next/link";
 
 function TontineContent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -50,57 +56,140 @@ function TontineContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [tontineDetails, setTontineDetails] = useState(null);
+  const [tontineDetails, setTontineDetails] = useState<{
+    id: string;
+    name: string;
+    participants: number;
+    maxParticipants?: number;
+    amount: string;
+    description?: string;
+    frequencyType?: string;
+  } | null>(null);
 
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
+
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut();
+      localStorage.removeItem('user-store');
+      toast.success("Déconnexion réussie");
+      router.push("/login");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 100);
+    } catch (error) {
+      console.error("Erreur déconnexion:", error);
+      toast.error("Erreur lors de la déconnexion");
+    }
+  };
+
+  const isAdmin = user?.role === 'ADMIN';
+  const getInitials = (name: string) => {
+    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+  };
 
   // Gestion des liens d'invitation partagés
   useEffect(() => {
     const code = searchParams.get("code");
     if (code) {
-      alert(code.toUpperCase().trim())
-      setInviteCode(code.toUpperCase().trim());
+      const normalizedCode = code.toUpperCase().trim();
+      setInviteCode(normalizedCode);
       setIsDialogOpen(true);
-      // Vérification automatique du code
+      // Vérification automatique du code - passer le code directement
       setTimeout(() => {
-        handleVerifyCode();
-      }, 1000);
+        verifyCode(normalizedCode);
+      }, 500);
     }
   }, [searchParams]);
 
-  const handleVerifyCode = async () => {
+  // Fonction de vérification qui accepte le code en paramètre
+  const verifyCode = async (codeToVerify: string) => {
+    if (!codeToVerify || codeToVerify.trim() === '') {
+      setError("Code d'invitation requis");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
-    // Simulation de l'API call
-    setTimeout(() => {
-      const upperCode = inviteCode.toUpperCase().trim();
-      if (upperCode === "FAMILLE2024" || upperCode === "BUSINESS123") {
+    try {
+      const response = await fetch('/api/tontines/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteCode: codeToVerify.toUpperCase().trim() })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.tontine) {
         setIsSuccess(true);
         setTontineDetails({
-          name:
-            upperCode === "FAMILLE2024"
-              ? "Tontine Famille"
-              : "Tontine Business",
-          id: upperCode === "FAMILLE2024" ? "famille" : "business",
-          participants: upperCode === "FAMILLE2024" ? 12 : 6,
-          amount: upperCode === "FAMILLE2024" ? "85 000 FCFA" : "25 000 FCFA",
+          id: result.tontine.id,
+          name: result.tontine.name,
+          participants: result.tontine.participants,
+          maxParticipants: result.tontine.maxParticipants,
+          amount: `${result.tontine.amountPerRound.toLocaleString('fr-FR')} FCFA`,
+          description: result.tontine.description,
+          frequencyType: result.tontine.frequencyType,
         });
       } else {
-        setError("Code d'invitation invalide. Vérifiez et réessayez.");
+        setError(result.error || "Code d'invitation invalide. Vérifiez et réessayez.");
       }
+    } catch (error) {
+      console.error("Erreur vérification code:", error);
+      setError("Erreur de connexion. Veuillez réessayer.");
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
-  const handleKeyPress = (e) => {
+  // Wrapper pour le bouton qui utilise le state inviteCode
+  const handleVerifyCode = async () => {
+    verifyCode(inviteCode);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inviteCode && !isLoading) {
       handleVerifyCode();
     }
   };
 
-  const handleJoinTontine = () => {
-    window.location.href = `/tontines/${tontineDetails.id}`;
+  const handleJoinTontine = async () => {
+    if (!tontineDetails) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch('/api/tontines/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tontineId: tontineDetails.id })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Rediriger vers la page de détails de la tontine
+        window.location.href = `/tontines/${tontineDetails.id}`;
+      } else if (response.status === 401) {
+        // Non authentifié - rediriger vers login
+        const redirectUrl = encodeURIComponent(`/tontines?code=${inviteCode}`);
+        window.location.href = `/login?redirect=${redirectUrl}`;
+      } else {
+        setError(result.error || "Impossible de rejoindre la tontine. Veuillez réessayer.");
+        setIsSuccess(false);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la participation:", error);
+      setError("Erreur de connexion. Veuillez réessayer.");
+      setIsSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const resetDialog = () => {
@@ -127,72 +216,97 @@ function TontineContent() {
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <img
-                src="/images/logo.png"
+                src="/images/logo-text2.png"
                 alt="Tontine"
                 className="h-6 sm:h-8 w-auto"
               />
             </div>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full p-0"
-                >
-                  <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all border-2 border-blue-200 shadow-sm">
-                    <AvatarImage
-                      src="/avatars/avatar-lnjhsze.svg"
-                      alt="Avatar"
-                    />
-                    <AvatarFallback className="bg-blue-50 text-blue-700 font-medium text-xs">
-                      JD
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-56" align="end" forceMount>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Jean Dupont
-                  </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    jean@example.com
-                  </p>
-                </div>
-                <div className="mt-3 pt-3 border-t">
-                  <div className="space-y-1">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start px-2 py-1.5 h-auto"
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profil</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start px-2 py-1.5 h-auto"
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      <span>Paiements</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start px-2 py-1.5 h-auto"
-                    >
-                      <Bell className="mr-2 h-4 w-4" />
-                      <span>Notifications</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start px-2 py-1.5 h-auto"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Déconnexion</span>
-                    </Button>
+            {user ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="relative cursor-pointer">
+                    <div className="w-8 h-8 rounded-full border-2 border-blue-500 bg-blue-50 flex items-center justify-center hover:ring-2 hover:ring-blue-300 transition-all shadow-sm">
+                      <div className="w-6 h-6 rounded-full overflow-hidden">
+                        <img
+                          src={user.image || "/avatars/avatar-portrait-svgrepo-com.svg"}
+                          alt="Avatar utilisateur"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+                </PopoverTrigger>
+                <PopoverContent className="w-56" align="end" forceMount>
+                  <div className="flex flex-col space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium leading-none">
+                        {user.name}
+                      </p>
+                      {user.emailVerified && (
+                        <BadgeCheck className="w-3.5 h-3.5 text-blue-600" />
+                      )}
+                    </div>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="space-y-1">
+                      {isAdmin && (
+                        <>
+                          <Link href="/admin">
+                            <Button
+                              variant="ghost"
+                              className="w-full justify-start px-2 py-1.5 h-auto text-purple-600 hover:text-purple-700 hover:bg-purple-50 cursor-pointer"
+                            >
+                              <Shield className="mr-2 h-4 w-4" />
+                              <span>Administration</span>
+                            </Button>
+                          </Link>
+                          <hr className="my-2" />
+                        </>
+                      )}
+                      <Link href="/dashboard">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start px-2 py-1.5 h-auto cursor-pointer"
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Dashboard</span>
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start px-2 py-1.5 h-auto cursor-pointer"
+                      >
+                        <Bell className="mr-2 h-4 w-4" />
+                        <span>Notifications</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1.5 h-auto cursor-pointer"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Déconnexion
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <LogOut className="w-4 h-4 mr-2 rotate-180" />
+                  Se connecter
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -271,19 +385,19 @@ function TontineContent() {
                         <div>
                           <div className="relative">
                             <Input
-                              placeholder="Ex: FAMILLE2024"
+                              placeholder="Ex: EDUZVS"
                               value={inviteCode}
                               onChange={(e) => {
                                 setInviteCode(e.target.value);
                                 setError("");
                               }}
-                              onKeyPress={handleKeyPress}
+                              onKeyDown={handleKeyPress}
                               className={`text-center font-mono text-base sm:text-lg tracking-wider uppercase bg-white/70 border-2 transition-all duration-200 focus:ring-4 focus:ring-blue-100 h-11 sm:h-12 ${
                                 error
                                   ? "border-red-500 focus:border-red-500 focus:ring-red-100"
                                   : "border-blue-200 focus:border-blue-400"
                               }`}
-                              maxLength={20}
+                              maxLength={6}
                               autoFocus={false}
                               onBlur={
                                 isLoading ? (e) => e.target.blur() : undefined
@@ -376,7 +490,10 @@ function TontineContent() {
                             </div>
                             <div>
                               <p className="text-xs text-blue-600 font-medium">Participants</p>
-                              <h4 className="font-bold text-blue-900 text-sm">{tontineDetails?.participants} personnes</h4>
+                              <h4 className="font-bold text-blue-900 text-sm">
+                                {tontineDetails?.participants}
+                                {tontineDetails?.maxParticipants && ` / ${tontineDetails.maxParticipants}`} personnes
+                              </h4>
                             </div>
                           </div>
                         </div>
@@ -404,10 +521,20 @@ function TontineContent() {
                         </Button>
                         <Button
                           onClick={handleJoinTontine}
+                          disabled={isLoading}
                           className="w-full sm:flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-white font-medium text-sm sm:text-base h-10 sm:h-11"
                         >
-                          <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                          <span>Rejoindre maintenant</span>
+                          {isLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                              <span>Inscription en cours...</span>
+                            </>
+                          ) : (
+                            <>
+                              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                              <span>Rejoindre maintenant</span>
+                            </>
+                          )}
                         </Button>
                       </DialogFooter>
                     </>

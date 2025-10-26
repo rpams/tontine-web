@@ -91,21 +91,20 @@ export function RegisterForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="backdrop-blur-sm bg-white/98 dark:bg-gray-950/95 shadow-2xl">
-        <CardHeader className="flex items-center gap-5">
+        <CardHeader className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-left">
           <Image
-              src="/images/logo.png"
-              alt="Tontine"
-              width={100}
-              height={43}
-              className="h-18 w-auto"
-            />
-          <div>
-          <CardTitle className="text-xl">Créer un compte</CardTitle>
-          <CardDescription>
-            Remplissez les informations ci-dessous pour créer votre compte
-          </CardDescription>
+            src="/images/logo.png"
+            alt="Tontine"
+            width={100}
+            height={43}
+            className="h-12 sm:h-16 w-auto flex-shrink-0"
+          />
+          <div className="space-y-1">
+            <CardTitle className="text-lg sm:text-xl font-semibold">Créer un compte</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Remplissez les informations ci-dessous pour créer votre compte
+            </CardDescription>
           </div>
-            
         </CardHeader>
         <CardContent>
           {error && (

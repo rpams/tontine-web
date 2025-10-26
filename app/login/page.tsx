@@ -5,6 +5,21 @@ import { GalleryVerticalEnd } from "lucide-react"
 import { LoginForm } from "@/components/login-form"
 import { AuthStepper } from "@/components/ui/auth-stepper"
 import Image from "next/image"
+import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
+
+function LoginContent() {
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect')
+
+  return (
+    <div className="flex justify-center">
+      <div className="w-full max-w-sm">
+        <LoginForm redirectUrl={redirect || undefined} />
+      </div>
+    </div>
+  )
+}
 
 export default function LoginPage() {
   return (
@@ -21,28 +36,19 @@ export default function LoginPage() {
         {/* Overlay pour assombrir */}
         <div className="absolute inset-0 bg-black/90"></div>
       </div>
-      
+
       {/* Contenu scrollable par-dessus */}
       <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-4 p-6 md:p-10">
         <div className="flex w-full max-w-3xl flex-col gap-4">
-          {/* <a href="#" className="items-center gap-2 self-center font-medium">
-            <Image
-              src="/images/logo.png"
-              alt="Tontine"
-              width={100}
-              height={43}
-              className="drop-shadow-lg"
-            />
-          </a> */}
-
-          {/* Stepper */}
-          {/* <AuthStep per currentStep={0} /> */}
-
-          <div className="flex justify-center">
-            <div className="w-full max-w-sm">
-              <LoginForm />
+          <Suspense fallback={
+            <div className="flex justify-center">
+              <div className="w-full max-w-sm">
+                <LoginForm />
+              </div>
             </div>
-          </div>
+          }>
+            <LoginContent />
+          </Suspense>
         </div>
       </div>
     </div>

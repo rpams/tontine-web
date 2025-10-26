@@ -55,7 +55,7 @@ model Tontine {
   maxParticipants     Int?
   allowMultipleShares Boolean              @default(true)
   maxSharesPerUser    Int?                 @default(3)
-  inviteCode          String               @unique @default(cuid())
+  inviteCode          String               @unique
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   creatorId           String

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { PrismaClient } from '@/lib/generated/prisma'
+import { generateInviteCode } from '@/lib/utils/invite-code'
 
 const prisma = new PrismaClient()
 
@@ -247,6 +248,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Générer un code d'invitation unique
+    let inviteCode = generateInviteCode()
+    let attempts = 0
+    const maxAttempts = 10
+
+    // Vérifier que le code est unique, sinon régénérer
+    while (attempts < maxAttempts) {
+      const existing = await prisma.tontine.findUnique({
+        where: { inviteCode }
+      })
+
+      if (!existing) break
+
+      inviteCode = generateInviteCode()
+      attempts++
+    }
+
+    if (attempts === maxAttempts) {
+      return NextResponse.json(
+        { error: 'Impossible de générer un code d\'invitation unique. Veuillez réessayer.' },
+        { status: 500 }
+      )
+    }
+
     // Créer la tontine
     const newTontine = await prisma.tontine.create({
       data: {
@@ -260,6 +285,7 @@ export async function POST(request: NextRequest) {
         allowMultipleShares,
         maxSharesPerUser: parseInt(maxSharesPerUser),
         startDate: startDate ? new Date(startDate) : null,
+        inviteCode,
         creatorId: userId,
         status: 'DRAFT'
       },
@@ -285,6 +311,7 @@ export async function POST(request: NextRequest) {
         name: newTontine.name,
         description: newTontine.description,
         amountPerRound: newTontine.amountPerRound,
+        inviteCode: newTontine.inviteCode,
         status: newTontine.status,
         createdAt: newTontine.createdAt,
         isOwner: true,
