@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-const { PrismaPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin')
 
 const nextConfig: NextConfig = {
   images: {
@@ -14,12 +13,10 @@ const nextConfig: NextConfig = {
   },
   typescript: {ignoreBuildErrors: true},
   eslint: {ignoreDuringBuilds: true},
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.plugins = [...config.plugins, new PrismaPlugin()];
-    }
-    return config;
-  },
+
+  // ✅ Configuration compatible Turbopack
+  // Le PrismaPlugin n'est pas nécessaire (seulement pour monorepos)
+  // Turbopack gère Prisma nativement avec prisma generate
 };
 
 export default nextConfig;

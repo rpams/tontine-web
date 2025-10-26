@@ -202,10 +202,10 @@ export default function Tontines() {
           <h2 className="text-2xl font-bold text-gray-900 font-poppins">Mes Tontines</h2>
           <p className="text-gray-600">Gérez toutes vos tontines en un seul endroit</p>
         </div>
-        <Button className="flex items-center sm:flex-shrink-0">
+        {/* <Button className="flex items-center sm:flex-shrink-0">
           <Plus className="w-4 h-4 mr-2" />
           Créer une tontine
-        </Button>
+        </Button> */}
       </div>
 
       {/* Search & Filters */}
@@ -331,16 +331,16 @@ export default function Tontines() {
 
       {/* Tontines Grid */}
       {tontines.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-12 bg-white rounded-md">
           <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           {filteredTontines.length === 0 && !searchQuery && selectedFilters.status.length === 0 && selectedFilters.role.length === 0 ? (
             <>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune tontine trouvée</h3>
               <p className="text-gray-500 text-sm mb-4">Créez votre première tontine pour commencer</p>
-              <Button>
+              {/* <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Créer une tontine
-              </Button>
+              </Button> */}
             </>
           ) : (
             <>

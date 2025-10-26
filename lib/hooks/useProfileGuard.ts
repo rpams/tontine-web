@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/lib/auth-client"
+import { useAuth } from "@/lib/hooks/useAuth"
 import { checkProfileCompletion, shouldRedirectToCompleteProfile } from "@/lib/utils/profile-checker"
 
 export function useProfileGuard(redirectTo: string = "/complete-profile") {
-  const { data: session, isLoading } = useSession()
+  const { user, isLoading, isAuthenticated } = useAuth()
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
   const [profileComplete, setProfileComplete] = useState(false)
@@ -15,7 +15,7 @@ export function useProfileGuard(redirectTo: string = "/complete-profile") {
     async function checkProfile() {
       if (isLoading) return
 
-      if (!session?.user?.id) {
+      if (!isAuthenticated || !user?.id) {
         router.push("/login")
         return
       }
@@ -38,11 +38,12 @@ export function useProfileGuard(redirectTo: string = "/complete-profile") {
     }
 
     checkProfile()
-  }, [session, isLoading, router, redirectTo])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, isLoading, isAuthenticated, redirectTo])
 
   return {
     isChecking: isChecking || isLoading,
     profileComplete,
-    user: session?.user
+    user
   }
 }

@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
+import Image from "next/image"
 
 export function LoginForm({
   className,
@@ -64,8 +65,27 @@ export function LoginForm({
         const errorMessage = getAuthErrorMessage(result.error)
         setError(errorMessage)
       } else {
-        // Rediriger vers la page OTP avec l'email en paramètre
-        router.push(`/otp-verification?email=${encodeURIComponent(data.email)}`)
+        // Authentification réussie, générer et envoyer l'OTP
+        try {
+          const otpResponse = await fetch('/api/auth/otp/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.email })
+          })
+
+          const otpResult = await otpResponse.json()
+
+          if (!otpResult.success) {
+            setError(otpResult.error || "Erreur lors de l'envoi du code OTP")
+            return
+          }
+
+          // Rediriger vers la page OTP avec l'email en paramètre
+          router.push(`/otp-verification?email=${encodeURIComponent(data.email)}`)
+        } catch (otpError) {
+          console.error("Erreur génération OTP:", otpError)
+          setError("Erreur lors de l'envoi du code de vérification")
+        }
       }
     } catch (error: any) {
       console.error("Erreur de connexion:", error)
@@ -85,11 +105,20 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className=" backdrop-blur-sm bg-white/98 dark:bg-gray-950/95 shadow-2xl">
-        <CardHeader className="">
+        <CardHeader className="flex items-center gap-5">
+          <Image
+            src="/images/logo.png"
+            alt="Tontine"
+            width={100}
+            height={43}
+            className="h-18 w-auto"
+          />
+          <div>
           <CardTitle className="text-xl">Se connecter</CardTitle>
           <CardDescription>
             Entrez votre email ci-dessous pour vous connecter à votre compte
           </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           {error && (
@@ -179,16 +208,18 @@ export function LoginForm({
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="remember" 
+                  <Checkbox
+                    id="remember"
                     checked={rememberMe}
                     onCheckedChange={(checked) => setValue("rememberMe", !!checked)}
                   />
-                  <Label 
-                    htmlFor="remember" 
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  <Label
+                    htmlFor="remember"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    title="Rester connecté pendant 7 jours"
                   >
-                    Se souvenir de moi
+                    Se souvenir de moi 
+                    {/* <span className="text-xs text-muted-foreground">(7 jours)</span> */}
                   </Label>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading || !isValid}>

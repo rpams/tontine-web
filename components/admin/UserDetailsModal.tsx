@@ -8,10 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { useAdminUserDetails } from "@/lib/hooks/useAdmin";
 import {
   User,
   FileText,
@@ -24,11 +23,9 @@ import {
   AlertCircle,
   DollarSign,
   Crown,
-  TrendingUp,
-  TrendingDown,
   BadgeCheck,
   Eye,
-  Download
+  Loader2
 } from "lucide-react";
 
 interface UserDetailsModalProps {
@@ -50,6 +47,11 @@ interface UserDetailsModalProps {
 export default function UserDetailsModal({ open, onOpenChange, user }: UserDetailsModalProps) {
   const [activeTab, setActiveTab] = useState("info");
 
+  // Récupérer les détails complets de l'utilisateur depuis l'API
+  const { data: userDetailsData, isLoading } = useAdminUserDetails(user?.id || null);
+
+  const userDetails = userDetailsData?.user;
+
   if (!user) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -60,41 +62,34 @@ export default function UserDetailsModal({ open, onOpenChange, user }: UserDetai
     );
   }
 
-  // Mock data - à remplacer par de vraies données
-  const userDetails = {
-    fullName: user.name,
-    email: user.email,
-    phone: user.phone || "+225 07 12 34 56 78",
-    address: "Abidjan, Cocody",
-    birthDate: "15 Mars 1990",
-    profession: "Entrepreneur",
-    registrationDate: user.joinDate,
-  };
+  if (isLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="!max-w-4xl w-[95vw] flex items-center justify-center p-12">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <p className="text-sm text-gray-600">Chargement des détails...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
-  const userDocuments = [
-    { id: 1, name: "Carte d'identité", type: "ID", status: "verified", uploadDate: "12 Jan 2024", url: "#" },
-    { id: 2, name: "Justificatif de revenus", type: "INCOME", status: "verified", uploadDate: "15 Jan 2024", url: "#" },
-    { id: 3, name: "Photo de profil", type: "PHOTO", status: "pending", uploadDate: "20 Jan 2024", url: "#" },
-  ];
+  if (!userDetails) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <div>Erreur lors du chargement des données</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
-  const userTontines = [
-    { id: 1, name: "Tontine Famille", role: "Créateur", participants: 12, amount: "85,000 FCFA", status: "active", joinDate: "15 Mars 2024" },
-    { id: 2, name: "Épargne Projet", role: "Participant", participants: 8, amount: "50,000 FCFA", status: "active", joinDate: "20 Mars 2024" },
-    { id: 3, name: "Business Fund", role: "Participant", participants: 6, amount: "25,000 FCFA", status: "completed", joinDate: "10 Février 2024" },
-  ];
-
-  const userTours = [
-    { id: 1, tontine: "Tontine Famille", month: "Avril 2024", amount: "85,000 FCFA", status: "received", date: "30 Avril 2024", position: 1 },
-    { id: 2, tontine: "Épargne Projet", month: "Mai 2024", amount: "50,000 FCFA", status: "upcoming", date: "31 Mai 2024", position: 3 },
-    { id: 3, tontine: "Business Fund", month: "Mars 2024", amount: "25,000 FCFA", status: "completed", date: "31 Mars 2024", position: 2 },
-  ];
-
-  const userPayments = [
-    { id: 1, type: "Contribution", tontine: "Tontine Famille", amount: "85,000 FCFA", status: "completed", date: "01 Avril 2024", reference: "TF240401001" },
-    { id: 2, type: "Gain", tontine: "Business Fund", amount: "25,000 FCFA", status: "completed", date: "31 Mars 2024", reference: "BF240331002" },
-    { id: 3, type: "Contribution", tontine: "Épargne Projet", amount: "50,000 FCFA", status: "pending", date: "15 Avril 2024", reference: "EP240415003" },
-    { id: 4, type: "Contribution", tontine: "Tontine Famille", amount: "85,000 FCFA", status: "failed", date: "28 Mars 2024", reference: "TF240328004" },
-  ];
+  // Combiner les tontines créées et participées
+  const allTontines = [
+    ...userDetails.ownedTontines,
+    ...userDetails.participantTontines
+  ].sort((a, b) => new Date(b.createdAt || b.joinedAt).getTime() - new Date(a.createdAt || a.joinedAt).getTime());
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -111,17 +106,6 @@ export default function UserDetailsModal({ open, onOpenChange, user }: UserDetai
         return { color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle, iconColor: 'text-red-500' };
       default:
         return { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: AlertCircle, iconColor: 'text-gray-500' };
-    }
-  };
-
-  const getPaymentTypeConfig = (type: string) => {
-    switch (type) {
-      case 'Contribution':
-        return { color: 'text-red-600', icon: TrendingDown, prefix: '-' };
-      case 'Gain':
-        return { color: 'text-green-600', icon: TrendingUp, prefix: '+' };
-      default:
-        return { color: 'text-gray-600', icon: DollarSign, prefix: '' };
     }
   };
 
@@ -184,12 +168,12 @@ export default function UserDetailsModal({ open, onOpenChange, user }: UserDetai
               {/* Informations personnelles */}
               <div className="space-y-2 sm:space-y-3">
                 {[
-                  { label: 'Nom complet', value: userDetails.fullName },
+                  { label: 'Nom complet', value: userDetails.name },
                   { label: 'Email', value: userDetails.email },
-                  { label: 'Téléphone', value: userDetails.phone },
-                  { label: 'Adresse', value: userDetails.address },
-                  { label: 'Date de naissance', value: userDetails.birthDate },
-                  { label: 'Profession', value: userDetails.profession }
+                  { label: 'Téléphone', value: userDetails.telephone || 'Non renseigné' },
+                  { label: 'Adresse', value: userDetails.address || 'Non renseignée' },
+                  { label: 'Date de naissance', value: userDetails.profile?.dateOfBirth ? new Date(userDetails.profile.dateOfBirth).toLocaleDateString('fr-FR') : 'Non renseignée' },
+                  { label: 'Profession', value: userDetails.profile?.profession || 'Non renseignée' }
                 ].map((item, index) => (
                   <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-1 sm:gap-0">
                     <span className="text-xs sm:text-sm text-gray-600 font-medium sm:font-normal">{item.label}</span>
@@ -202,52 +186,62 @@ export default function UserDetailsModal({ open, onOpenChange, user }: UserDetai
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-1 sm:gap-0">
                   <span className="text-xs sm:text-sm text-gray-600 font-medium sm:font-normal">Email vérifié</span>
-                  <Badge variant={user.isEmailVerified ? 'default' : 'secondary'} className="text-xs h-4 sm:h-5 px-1.5 sm:px-2 self-start sm:self-auto">
-                    {user.isEmailVerified ? 'Oui' : 'Non'}
+                  <Badge variant={userDetails.verified ? 'default' : 'secondary'} className="text-xs h-4 sm:h-5 px-1.5 sm:px-2 self-start sm:self-auto">
+                    {userDetails.verified ? 'Oui' : 'Non'}
                   </Badge>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-1 sm:gap-0">
                   <span className="text-xs sm:text-sm text-gray-600 font-medium sm:font-normal">Documents vérifiés</span>
-                  <Badge variant={user.isDocumentVerified ? 'default' : 'secondary'} className="text-xs h-4 sm:h-5 px-1.5 sm:px-2 self-start sm:self-auto">
-                    {user.isDocumentVerified ? 'Oui' : 'Non'}
+                  <Badge variant={userDetails.identityVerification?.status === 'APPROVED' ? 'default' : 'secondary'} className="text-xs h-4 sm:h-5 px-1.5 sm:px-2 self-start sm:self-auto">
+                    {userDetails.identityVerification?.status === 'APPROVED' ? 'Oui' : 'Non'}
                   </Badge>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-1 sm:gap-0">
                   <span className="text-xs sm:text-sm text-gray-600 font-medium sm:font-normal">Statut</span>
-                  <Badge variant={user.status === 'active' ? 'default' : 'secondary'} className="text-xs h-4 sm:h-5 px-1.5 sm:px-2 self-start sm:self-auto">
-                    {user.status === 'active' ? 'Actif' : 'Inactif'}
+                  <Badge variant={userDetails.status === 'active' ? 'default' : 'secondary'} className="text-xs h-4 sm:h-5 px-1.5 sm:px-2 self-start sm:self-auto">
+                    {userDetails.status === 'active' ? 'Actif' : 'Suspendu'}
                   </Badge>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-1 sm:gap-0">
                   <span className="text-xs sm:text-sm text-gray-600 font-medium sm:font-normal">Inscrit le</span>
-                  <span className="text-xs sm:text-sm font-medium text-gray-900">{userDetails.registrationDate}</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-900">{new Date(userDetails.joinDate).toLocaleDateString('fr-FR')}</span>
                 </div>
 
                 {/* Document d'identité */}
-                <div className="flex flex-col sm:flex-row sm:items-center p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-2 sm:gap-3">
-                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center flex-shrink-0 ${getStatusConfig(userDocuments[0].status).color}`}>
-                      <FileText className="w-3 h-3" />
+                {userDetails.identityVerification && (
+                  <div className="flex flex-col sm:flex-row sm:items-center p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-2 sm:gap-3">
+                    <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center flex-shrink-0 ${
+                        userDetails.identityVerification.status === 'APPROVED' ? 'bg-green-100 text-green-800 border-green-200' :
+                        userDetails.identityVerification.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                        'bg-red-100 text-red-800 border-red-200'
+                      }`}>
+                        <FileText className="w-3 h-3" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{userDetails.identityVerification.documentType || "Document d'identité"}</p>
+                        <p className="text-xs text-gray-500">Ajouté le {userDetails.identityVerification.submittedAt ? new Date(userDetails.identityVerification.submittedAt).toLocaleDateString('fr-FR') : 'N/A'}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{userDocuments[0].name}</p>
-                      <p className="text-xs text-gray-500">Ajouté le {userDocuments[0].uploadDate}</p>
+                    <div className="flex items-center justify-between sm:justify-end space-x-2 flex-shrink-0">
+                      <Badge variant="secondary" className={`text-xs border-0 h-4 px-1.5 ${
+                        userDetails.identityVerification.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                        userDetails.identityVerification.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {userDetails.identityVerification.status === 'APPROVED' ? 'Vérifié' :
+                         userDetails.identityVerification.status === 'PENDING' ? 'En attente' : 'Rejeté'}
+                      </Badge>
+                      {userDetails.identityVerification.documentFrontUrl && (
+                        <div className="flex items-center space-x-1">
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => window.open(userDetails.identityVerification?.documentFrontUrl || '', '_blank')}>
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between sm:justify-end space-x-2 flex-shrink-0">
-                    <Badge variant="secondary" className={`${getStatusConfig(userDocuments[0].status).color} text-xs border-0 h-4 px-1.5`}>
-                      {userDocuments[0].status === 'verified' ? 'Vérifié' : userDocuments[0].status === 'pending' ? 'En attente' : 'Rejeté'}
-                    </Badge>
-                    <div className="flex items-center space-x-1">
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <Eye className="w-3 h-3" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <Download className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -256,8 +250,8 @@ export default function UserDetailsModal({ open, onOpenChange, user }: UserDetai
           {/* Onglet Tontines */}
           <TabsContent value="tontines" className="flex-1 overflow-y-auto mt-2 sm:mt-3 md:mt-4">
             <div className="space-y-2">
-              {userTontines.map((tontine) => {
-                const statusConfig = getStatusConfig(tontine.status);
+              {allTontines.length > 0 ? allTontines.map((tontine: any) => {
+                const statusConfig = getStatusConfig(tontine.status.toLowerCase());
 
                 return (
                   <div key={tontine.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-2 sm:gap-3">
@@ -268,72 +262,52 @@ export default function UserDetailsModal({ open, onOpenChange, user }: UserDetai
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 mb-1">
                           <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{tontine.name}</p>
-                          {tontine.role === 'Créateur' && (
+                          {tontine.role === 'creator' && (
                             <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                           )}
                         </div>
-                        <p className="text-xs text-gray-500">{tontine.participants} participants • {tontine.amount}</p>
-                        <p className="text-xs text-gray-400">Rejoint le {tontine.joinDate}</p>
+                        <p className="text-xs text-gray-500">{tontine.participantCount || tontine.maxParticipants} participants • {tontine.amount} FCFA</p>
+                        <p className="text-xs text-gray-400">
+                          {tontine.role === 'creator' ? 'Créée le' : 'Rejoint le'} {new Date(tontine.createdAt || tontine.joinedAt).toLocaleDateString('fr-FR')}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end sm:flex-col gap-1 flex-shrink-0">
                       <Badge variant="outline" className="text-xs h-4 px-1.5">
-                        {tontine.role}
+                        {tontine.role === 'creator' ? 'Créateur' : 'Participant'}
                       </Badge>
                       <Badge variant="secondary" className={`${statusConfig.color} text-xs border-0 h-4 px-1.5`}>
-                        {tontine.status === 'active' ? 'Active' : 'Terminée'}
+                        {tontine.status === 'ACTIVE' ? 'Active' :
+                         tontine.status === 'PENDING' ? 'En attente' :
+                         tontine.status === 'COMPLETED' ? 'Terminée' : tontine.status}
                       </Badge>
                     </div>
                   </div>
                 );
-              })}
+              }) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Aucune tontine</p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
           {/* Onglet Tours */}
           <TabsContent value="tours" className="flex-1 overflow-y-auto mt-2 sm:mt-3 md:mt-4">
-            <div className="space-y-2">
-              {userTours.map((tour) => {
-                const statusConfig = getStatusConfig(tour.status);
-
-                return (
-                  <div key={tour.id} className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 rounded-lg border border-gray-200 gap-2 sm:gap-3 ${
-                    tour.status === 'upcoming' ? 'bg-blue-50/50 border-blue-200' : 'bg-gray-50'
-                  }`}>
-                    <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md flex items-center justify-center font-bold text-xs flex-shrink-0 ${
-                        tour.status === 'received' ? 'bg-green-100 text-green-600' :
-                        tour.status === 'upcoming' ? 'bg-blue-100 text-blue-600' :
-                        'bg-gray-100 text-gray-600'
-                      }`}>
-                        {tour.position === 1 ? <Crown className="w-3 h-3" /> : tour.position}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{tour.tontine}</p>
-                        <p className="text-xs text-gray-500">{tour.month} • Position #{tour.position}</p>
-                        <p className="text-xs text-gray-400">{tour.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between sm:justify-end sm:flex-col gap-1 flex-shrink-0">
-                      <p className="text-xs sm:text-sm font-semibold text-gray-900 sm:mb-1">{tour.amount}</p>
-                      <Badge variant="secondary" className={`${statusConfig.color} text-xs border-0 h-4 px-1.5`}>
-                        {tour.status === 'received' ? 'Reçu' : tour.status === 'upcoming' ? 'À venir' : 'Terminé'}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="text-center py-12 text-gray-500">
+              <Calendar className="w-16 h-16 mx-auto mb-4 opacity-30" />
+              <p className="text-sm font-medium mb-1">Onglet Tours</p>
+              <p className="text-xs">Les informations de tours seront disponibles prochainement</p>
             </div>
           </TabsContent>
 
           {/* Onglet Paiements */}
           <TabsContent value="payments" className="flex-1 overflow-y-auto mt-2 sm:mt-3 md:mt-4">
             <div className="space-y-2">
-              {userPayments.map((payment) => {
-                const statusConfig = getStatusConfig(payment.status);
-                const typeConfig = getPaymentTypeConfig(payment.type);
+              {userDetails.payments.length > 0 ? userDetails.payments.map((payment: any) => {
+                const statusConfig = getStatusConfig(payment.status.toLowerCase());
                 const StatusIcon = statusConfig.icon;
-                const TypeIcon = typeConfig.icon;
 
                 return (
                   <div key={payment.id} className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 gap-2 sm:gap-3">
@@ -343,27 +317,36 @@ export default function UserDetailsModal({ open, onOpenChange, user }: UserDetai
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-1">
-                          <h3 className="text-xs sm:text-sm font-medium text-gray-900 truncate">{payment.tontine}</h3>
+                          <h3 className="text-xs sm:text-sm font-medium text-gray-900 truncate">{payment.tontineName}</h3>
                           <Badge variant="secondary" className={`${statusConfig.color} text-xs border-0 h-4 px-1.5 self-start sm:self-auto mt-1 sm:mt-0`}>
-                            {payment.status === 'completed' ? 'Terminé' : payment.status === 'pending' ? 'En attente' : 'Échec'}
+                            {payment.status === 'COMPLETED' ? 'Terminé' :
+                             payment.status === 'PENDING' ? 'En attente' :
+                             payment.status === 'FAILED' ? 'Échec' : payment.status}
                           </Badge>
                         </div>
-                        <p className="text-xs text-gray-500 truncate">Réf: {payment.reference}</p>
-                        <p className="text-xs text-gray-400">{payment.date}</p>
+                        <p className="text-xs text-gray-500 truncate">Réf: {payment.reference} • Round {payment.round}</p>
+                        <p className="text-xs text-gray-400">
+                          {payment.paidAt ? 'Payé le ' + new Date(payment.paidAt).toLocaleDateString('fr-FR') :
+                           'Dû le ' + new Date(payment.dueDate).toLocaleDateString('fr-FR')}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end sm:flex-col gap-1 flex-shrink-0">
-                      <div className={`flex items-center font-semibold text-xs sm:text-sm ${typeConfig.color}`}>
-                        <TypeIcon className="w-3 h-3 mr-1" />
-                        <span>{typeConfig.prefix}{payment.amount}</span>
+                      <div className={`flex items-center font-semibold text-xs sm:text-sm ${
+                        payment.status === 'COMPLETED' ? 'text-green-600' : 'text-gray-900'
+                      }`}>
+                        <DollarSign className="w-3 h-3 mr-1" />
+                        <span>{payment.amount} FCFA</span>
                       </div>
-                      <Badge variant="outline" className="text-xs h-4 px-1.5">
-                        {payment.type}
-                      </Badge>
                     </div>
                   </div>
                 );
-              })}
+              }) : (
+                <div className="text-center py-8 text-gray-500">
+                  <CreditCard className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Aucun paiement</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

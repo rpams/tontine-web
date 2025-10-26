@@ -18,9 +18,12 @@ import {
   Camera,
   UserCircle2,
   Check,
-  Users
+  Users,
+  CheckCircle,
+  XCircle,
+  Loader2
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useUser } from "@/lib/store/user-store"
@@ -28,7 +31,8 @@ import { ErrorAlert } from "@/components/ui/error-alert"
 import { z } from "zod"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
-import { 
+import { Progress } from "@/components/ui/progress"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -74,6 +78,13 @@ export function CompleteProfileForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  // Username availability check
+  const [usernameStatus, setUsernameStatus] = useState<{
+    checking: boolean
+    available: boolean | null
+    message: string
+  }>({ checking: false, available: null, message: '' })
+
   // Store utilisateur
   const { updateProfile } = useUser()
 
@@ -95,6 +106,72 @@ export function CompleteProfileForm({
   })
 
   const username = watch("username")
+  const gender = watch("gender")
+  const address = watch("address")
+  const phone = watch("phone")
+
+  // Calculer le pourcentage de complétion du profil
+  const calculateCompletion = useCallback(() => {
+    const fields = {
+      username: username && username.length >= 3,
+      gender: !!gender,
+      avatar: !!(selectedAvatar || customProfileImage || profileImagePreview),
+      phone: phoneNumber && phoneNumber.length >= 10,
+      address: address && address.length > 0
+    }
+
+    const completed = Object.values(fields).filter(Boolean).length
+    const total = Object.keys(fields).length
+    return Math.round((completed / total) * 100)
+  }, [username, gender, selectedAvatar, customProfileImage, profileImagePreview, phoneNumber, address])
+
+  const completionPercentage = calculateCompletion()
+
+  // Fonction debounce pour vérifier username
+  const checkUsernameAvailability = useCallback(
+    async (usernameToCheck: string) => {
+      if (!usernameToCheck || usernameToCheck.length < 3) {
+        setUsernameStatus({ checking: false, available: null, message: '' })
+        return
+      }
+
+      setUsernameStatus({ checking: true, available: null, message: '' })
+
+      try {
+        const response = await fetch(`/api/profile/check-username?username=${encodeURIComponent(usernameToCheck)}`)
+        const result = await response.json()
+
+        if (result.success) {
+          setUsernameStatus({
+            checking: false,
+            available: result.available,
+            message: result.message
+          })
+        } else {
+          setUsernameStatus({
+            checking: false,
+            available: false,
+            message: result.message || 'Erreur de validation'
+          })
+        }
+      } catch (error) {
+        console.error('Erreur vérification username:', error)
+        setUsernameStatus({ checking: false, available: null, message: '' })
+      }
+    },
+    []
+  )
+
+  // Debounced username check
+  useEffect(() => {
+    if (!username) return
+
+    const debounceTimer = setTimeout(() => {
+      checkUsernameAvailability(username)
+    }, 500)
+
+    return () => clearTimeout(debounceTimer)
+  }, [username, checkUsernameAvailability])
 
   // Fonction helper pour upload de fichiers (images de profil uniquement)
   const uploadFile = async (file: File) => {
@@ -291,14 +368,30 @@ export function CompleteProfileForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="backdrop-blur-sm bg-white/98 dark:bg-gray-950/95 shadow-2xl">
-        <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-lg sm:text-xl flex items-center gap-3">
-            <UserCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            Compléter votre profil
-          </CardTitle>
-          <CardDescription className="text-sm">
-            Ces informations nous aideront à personnaliser votre expérience et à sécuriser votre compte
-          </CardDescription>
+        <CardHeader className="px-4 sm:px-6 space-y-4">
+          <div>
+            <CardTitle className="text-lg sm:text-xl flex items-center gap-3">
+              <UserCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              Compléter votre profil
+            </CardTitle>
+            <CardDescription className="text-sm">
+              Ces informations nous aideront à personnaliser votre expérience et à sécuriser votre compte
+            </CardDescription>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Progression</span>
+              <span className="font-medium text-primary">{completionPercentage}%</span>
+            </div>
+            <Progress value={completionPercentage} className="h-2" />
+            <p className="text-xs text-muted-foreground">
+              {completionPercentage === 100
+                ? "Profil complet! Vous pouvez soumettre le formulaire."
+                : `Plus que ${100 - completionPercentage}% pour compléter votre profil.`}
+            </p>
+          </div>
         </CardHeader>
         <CardContent className="px-4 sm:px-6">
           <form id="complete-profile-form" onSubmit={handleSubmit(onSubmit)}>
@@ -307,34 +400,30 @@ export function CompleteProfileForm({
               {/* Photo de profil section */}
               <div className="space-y-3">
                 <Label className="text-base font-semibold">Photo de profil</Label>
-                
+
                 {/* Preview et avatars sur la même ligne */}
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Preview */}
                   <div className="flex items-center gap-3 sm:w-auto">
-                    <Avatar className="w-16 h-16">
+                    <Avatar className="w-16 h-16 ring-2 ring-primary/20">
                       <AvatarImage src={currentProfileImage || ""} />
                       <AvatarFallback>
                         <User className="w-8 h-8" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="sm:hidden">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Choisissez un avatar ou uploadez une photo
                       </p>
                     </div>
                   </div>
 
                   {/* Avatars et upload sur la droite */}
-                  <div className="flex-1 space-y-3">
-                    <div className="hidden sm:block">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Choisissez un avatar ou uploadez une photo
-                      </p>
-                    </div>
-                    
-                    {/* Avatars prédéfinis */}
-                    <div className="flex flex-wrap gap-2 justify-start">
+                  <div className="flex-1 space-y-4">
+                    {/* Label section avatars prédéfinis */}
+                    <div>
+                      <p className="text-sm font-medium mb-2">Avatars prédéfinis</p>
+                      <div className="flex flex-wrap gap-2 justify-start">
                       {avatarOptions.map((avatar, index) => {
                         const borderColors = [
                           'border-blue-500', 'border-green-500', 'border-purple-500', 'border-orange-500',
@@ -374,29 +463,43 @@ export function CompleteProfileForm({
                           </button>
                         );
                       })}
+                      </div>
                     </div>
 
-                    {/* Upload photo personnalisée - compact */}
-                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
-                      <Input
-                        id="profile-image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleProfileImageChange}
-                        className="hidden"
-                      />
-                      <Label
-                        htmlFor="profile-image"
-                        className="flex items-center gap-2 cursor-pointer px-3 py-1.5 text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-auto justify-center sm:justify-start"
-                      >
-                        <Camera className="w-3 h-3" />
-                        Upload photo
-                      </Label>
-                      {customProfileImage && (
-                        <span className="text-xs text-muted-foreground truncate text-center sm:text-left">
-                          {customProfileImage.name}
-                        </span>
-                      )}
+                    {/* Divider */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="bg-white px-2 text-muted-foreground">ou</span>
+                      </div>
+                    </div>
+
+                    {/* Upload photo personnalisée */}
+                    <div>
+                      <p className="text-sm font-medium mb-2">Importer votre photo</p>
+                      <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3">
+                        <Input
+                          id="profile-image"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleProfileImageChange}
+                          className="hidden"
+                        />
+                        <Label
+                          htmlFor="profile-image"
+                          className="flex items-center gap-2 cursor-pointer px-3 py-1.5 text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-auto justify-center sm:justify-start"
+                        >
+                          <Camera className="w-3 h-3" />
+                          Upload photo
+                        </Label>
+                        {customProfileImage && (
+                          <span className="text-xs text-muted-foreground truncate text-center sm:text-left">
+                            {customProfileImage.name}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -413,13 +516,41 @@ export function CompleteProfileForm({
                       id="username"
                       type="text"
                       placeholder="votre_pseudo"
-                      className={cn("pl-10", errors.username && "border-red-500")}
+                      className={cn(
+                        "pl-10 pr-10",
+                        errors.username && "border-red-500",
+                        usernameStatus.available === true && "border-green-500",
+                        usernameStatus.available === false && "border-red-500"
+                      )}
                       {...register("username")}
                     />
+                    {/* Icon de status */}
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      {usernameStatus.checking && (
+                        <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                      )}
+                      {!usernameStatus.checking && usernameStatus.available === true && (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      )}
+                      {!usernameStatus.checking && usernameStatus.available === false && (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Lettres, chiffres et _ (3-20 car.)
-                  </p>
+                  {/* Message de disponibilité */}
+                  {usernameStatus.message && !errors.username && (
+                    <p className={cn(
+                      "text-xs",
+                      usernameStatus.available ? "text-green-600" : "text-red-600"
+                    )}>
+                      {usernameStatus.message}
+                    </p>
+                  )}
+                  {!usernameStatus.message && !errors.username && (
+                    <p className="text-xs text-muted-foreground">
+                      Lettres, chiffres et _ (3-20 car.)
+                    </p>
+                  )}
                   {errors.username && (
                     <p className="text-xs text-red-600">{errors.username.message}</p>
                   )}

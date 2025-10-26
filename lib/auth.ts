@@ -38,14 +38,16 @@ export const auth = betterAuth({
   },
   trustedOrigins: ["http://localhost:3000"],
   session: {
-    cookieOptions: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7 // 7 days
-    }
+    // Activer refresh tokens pour meilleure sécurité
+    freshAge: 60 * 60 * 24, // 1 jour - après ça, refresh est requis
+    expiresIn: 60 * 60 * 24 * 7, // 7 jours - durée totale max
   },
-  plugins: [nextCookies(), admin()],
+  plugins: [
+    nextCookies(),
+    admin(),
+    // TODO: Ajouter rate limiting avec @upstash/ratelimit ou similaire
+    // Pour protéger contre les attaques brute-force
+  ],
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
       // Vérifier si c'est une inscription par email
@@ -55,20 +57,41 @@ export const auth = betterAuth({
         if (newSession) {
           // Créer automatiquement un profil minimal après l'inscription
           try {
-            await prisma.userProfile.create({
-              data: {
-                userId: newSession.user.id,
-                // Profil minimal - sera complété dans complete-profile
-                firstName: newSession.user.name?.split(' ')[0] || null,
-                lastName: newSession.user.name?.split(' ').slice(1).join(' ') || null,
-                preferredLanguage: 'fr',
-                timezone: 'Africa/Dakar'
-              }
+            // Vérifier si le profil existe déjà (au cas où)
+            const existingProfile = await prisma.userProfile.findUnique({
+              where: { userId: newSession.user.id }
             })
 
-            console.log(`✅ Profil minimal créé pour ${newSession.user.email}`)
+            if (!existingProfile) {
+              await prisma.userProfile.create({
+                data: {
+                  userId: newSession.user.id,
+                  // Profil minimal - sera complété dans complete-profile
+                  firstName: newSession.user.name?.split(' ')[0] || null,
+                  lastName: newSession.user.name?.split(' ').slice(1).join(' ') || null,
+                  preferredLanguage: 'fr',
+                  timezone: 'Africa/Dakar',
+                  isProfileComplete: false
+                }
+              })
+
+              console.log(`✅ Profil minimal créé pour ${newSession.user.email}`)
+            } else {
+              console.log(`ℹ️ Profil déjà existant pour ${newSession.user.email}`)
+            }
           } catch (error) {
             console.error('❌ Erreur création profil:', error)
+            // En cas d'erreur, supprimer l'utilisateur créé pour éviter état incohérent
+            try {
+              await prisma.user.delete({
+                where: { id: newSession.user.id }
+              })
+              console.log(`🔄 Utilisateur ${newSession.user.email} supprimé suite à l'erreur`)
+            } catch (deleteError) {
+              console.error('❌ Erreur lors du rollback:', deleteError)
+            }
+            // Propager l'erreur pour informer l'utilisateur
+            throw new Error("Erreur lors de la création du profil. Veuillez réessayer.")
           }
         }
       }

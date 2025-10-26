@@ -44,7 +44,7 @@ export function OtpForm({
   const [isLoading, setIsLoading] = useState(false)
   const [isResending, setIsResending] = useState(false)
   const [error, setError] = useState("")
-  const [timeLeft, setTimeLeft] = useState(300) // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(180) // 3 minutes (standard industrie)
   const [canResend, setCanResend] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -155,17 +155,25 @@ export function OtpForm({
       return
     }
 
+    if (!email) {
+      setError("Email manquant. Veuillez vous reconnecter.")
+      return
+    }
+
     setIsLoading(true)
     setError("")
 
     try {
-      // Simuler la vérification OTP
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Vérifier l'OTP via l'API
+      const response = await fetch('/api/auth/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: codeToVerify })
+      })
 
-      // Simuler une réponse (en vrai, ça viendrait de votre API)
-      const isValid = codeToVerify === "1234" // Code de test
+      const result = await response.json()
 
-      if (isValid) {
+      if (result.success) {
         toast.success("Code OTP vérifié avec succès !")
         if (onComplete) {
           onComplete()
@@ -195,12 +203,13 @@ export function OtpForm({
           }
         }
       } else {
-        setError("Code OTP invalide. Veuillez réessayer.")
+        setError(result.error || "Code OTP invalide. Veuillez réessayer.")
         // Réinitialiser le formulaire
         setOtp(new Array(4).fill(""))
         inputRefs.current[0]?.focus()
       }
     } catch (error) {
+      console.error("Erreur vérification OTP:", error)
       setError("Une erreur est survenue lors de la vérification")
     } finally {
       setIsLoading(false)
@@ -208,25 +217,41 @@ export function OtpForm({
   }
 
   const handleResend = async () => {
+    if (!email) {
+      setError("Email manquant. Veuillez vous reconnecter.")
+      return
+    }
+
     setIsResending(true)
     setError("")
 
     try {
-      // Simuler le renvoi du code
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Appeler l'API pour renvoyer l'OTP
+      const response = await fetch('/api/auth/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
 
-      toast.success("Un nouveau code OTP a été envoyé à votre email")
+      const result = await response.json()
 
-      // Réinitialiser les timers
-      setTimeLeft(300) // 5 minutes
-      setCanResend(false)
-      setResendCooldown(60) // 1 minute de cooldown
+      if (result.success) {
+        toast.success("Un nouveau code OTP a été envoyé à votre email")
 
-      // Réinitialiser le formulaire
-      setOtp(new Array(4).fill(""))
-      inputRefs.current[0]?.focus()
+        // Réinitialiser les timers
+        setTimeLeft(180) // 3 minutes
+        setCanResend(false)
+        setResendCooldown(60) // 1 minute de cooldown
+
+        // Réinitialiser le formulaire
+        setOtp(new Array(4).fill(""))
+        inputRefs.current[0]?.focus()
+      } else {
+        setError(result.error || "Impossible de renvoyer le code.")
+      }
 
     } catch (error) {
+      console.error("Erreur renvoi OTP:", error)
       setError("Impossible de renvoyer le code. Veuillez réessayer.")
     } finally {
       setIsResending(false)
@@ -372,7 +397,7 @@ export function OtpForm({
             {/* Code de test pour développement */}
             {process.env.NODE_ENV === 'development' && (
               <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                <strong>Code de test :</strong> 1234
+                <strong>Mode DEV :</strong> Le code OTP est {otp.join("") || "1234"}
               </div>
             )}
           </div>
@@ -401,7 +426,7 @@ export function OtpForm({
           <span className="font-medium">Connexion sécurisée</span>
         </div>
         <p>
-          Ce code de vérification expire dans 5 minutes pour votre sécurité.
+          Ce code de vérification expire dans 3 minutes pour votre sécurité.
           Ne le partagez jamais avec personne.
         </p>
       </div>

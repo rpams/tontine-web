@@ -369,20 +369,20 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                 )}
               </div>
 
-              <div className="sm:col-span-2">
+              {/* Section Document d'identité - Commentée car gérée par la bannière du dashboard */}
+              {/* <div className="sm:col-span-2">
                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Document d'identité (CNI/CIP/Passeport)</Label>
                 {isEditing ? (
                   <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Image existante */}
                     {formData.document && (
                       <div className="flex-shrink-0 self-start">
-                        <div 
+                        <div
                           onClick={openDocument}
                           className="cursor-pointer group relative"
                         >
-                          <img 
-                            src={formData.document} 
-                            alt="Document d'identité" 
+                          <img
+                            src={formData.document}
+                            alt="Document d'identité"
                             className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border-2 border-green-300 shadow-sm group-hover:shadow-md transition-shadow"
                           />
                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-lg transition-all flex items-center justify-center">
@@ -393,13 +393,12 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                         </div>
                       </div>
                     )}
-                    
-                    {/* Zone de drag & drop - Toujours visible en mode édition */}
+
                     <div className={`${formData.document ? 'flex-1' : 'w-full'}`}>
                       <div
                         className={`relative border-2 border-dashed rounded-lg p-3 transition-colors cursor-pointer h-24 sm:h-32 ${
-                          isDragOver 
-                            ? 'border-blue-400 bg-blue-50' 
+                          isDragOver
+                            ? 'border-blue-400 bg-blue-50'
                             : 'border-gray-300 bg-gray-50 hover:border-gray-400'
                         }`}
                         onDrop={handleDrop}
@@ -434,13 +433,13 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                 ) : (
                   formData.document ? (
                     <div className="flex justify-center">
-                      <div 
+                      <div
                         onClick={openDocument}
                         className="cursor-pointer group relative"
                       >
-                        <img 
-                          src={formData.document} 
-                          alt="Document d'identité" 
+                        <img
+                          src={formData.document}
+                          alt="Document d'identité"
                           className="w-32 h-32 object-cover rounded-lg border-2 border-green-300 shadow-sm group-hover:shadow-md transition-shadow"
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-lg transition-all flex items-center justify-center">
@@ -464,7 +463,7 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                     </div>
                   )
                 )}
-              </div>
+              </div> */}
 
               <div>
                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Membre depuis</Label>
@@ -494,12 +493,12 @@ export default function Profile({ onAvatarChange, currentAvatar }: ProfileProps)
                 <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span className="truncate">Méthodes de paiement</span>
               </Button>
-              <Link href="/identity-verification">
+              {/* <Link href="/identity-verification">
                 <Button variant="outline" size="sm" className="w-full justify-start h-9 text-sm">
                   <Shield className="w-4 h-4 mr-2 flex-shrink-0" />
                   <span className="truncate">Vérification d'identité</span>
                 </Button>
-              </Link>
+              </Link> */}
               <Button variant="outline" size="sm" className="w-full justify-start h-9 text-sm">
                 <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span className="truncate">Paramètres avancés</span>

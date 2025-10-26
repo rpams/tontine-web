@@ -19,7 +19,8 @@ export function getAuthErrorMessage(error: any): string {
       return "Email ou mot de passe incorrect."
 
     case 'USER_NOT_FOUND':
-      return "Aucun compte associé à cette adresse email."
+      // Message générique pour éviter l'énumération d'emails
+      return "Email ou mot de passe incorrect."
 
     case 'PASSWORD_TOO_WEAK':
       return "Le mot de passe doit contenir au moins 8 caractères."

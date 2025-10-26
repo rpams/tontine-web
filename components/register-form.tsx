@@ -20,6 +20,8 @@ import { authClient } from "@/lib/auth-client"
 import { toast } from "sonner"
 import { getAuthErrorMessage } from "@/lib/utils/auth-errors"
 import { ErrorAlert } from "@/components/ui/error-alert"
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength"
+import Image from "next/image"
 
 function SubmitButton({ isValid, isLoading }: { isValid: boolean, isLoading: boolean }) {
   return (
@@ -56,6 +58,8 @@ export function RegisterForm({
     },
   })
 
+  const password = watch("password")
+
   const onSubmit = async (data: RegisterFormData) => {
     const { data: authData, error } = await authClient.signUp.email(
       {
@@ -87,11 +91,21 @@ export function RegisterForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="backdrop-blur-sm bg-white/98 dark:bg-gray-950/95 shadow-2xl">
-        <CardHeader className="">
+        <CardHeader className="flex items-center gap-5">
+          <Image
+              src="/images/logo.png"
+              alt="Tontine"
+              width={100}
+              height={43}
+              className="h-18 w-auto"
+            />
+          <div>
           <CardTitle className="text-xl">Créer un compte</CardTitle>
           <CardDescription>
             Remplissez les informations ci-dessous pour créer votre compte
           </CardDescription>
+          </div>
+            
         </CardHeader>
         <CardContent>
           {error && (
@@ -217,9 +231,8 @@ export function RegisterForm({
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  8 caractères min, 1 majuscule et 1 chiffre
-                </p>
+                {/* Password Strength Indicator */}
+                <PasswordStrengthIndicator password={password || ""} showDetails={true} />
                 {errors.password && (
                   <p className="text-xs text-red-600">{errors.password.message}</p>
                 )}

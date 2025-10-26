@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,9 +36,14 @@ import { useTontines } from "@/lib/hooks/useTontines";
 import { usePayments } from "@/lib/hooks/usePayments";
 
 export default function DashboardWithData() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') || 'overview';
+
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [identityVerificationStatus, setIdentityVerificationStatus] = useState<'not_started' | 'pending' | 'verified' | 'rejected'>('not_started');
   const [userAvatar, setUserAvatar] = useState<string>("");
+  const [isLoadingVerification, setIsLoadingVerification] = useState(true);
 
   // Récupérer les données utilisateur depuis le store
   const {
@@ -80,15 +86,67 @@ export default function DashboardWithData() {
 
   const userVerification = {
     isEmailVerified: user?.emailVerified || false,
-    isDocumentVerified: false // TODO: À implémenter avec la vérification d'identité
+    isDocumentVerified: identityVerificationStatus === 'verified'
+  };
+
+  // Synchroniser l'onglet actif avec l'URL
+  useEffect(() => {
+    setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
+
+  // Fonction pour changer d'onglet et mettre à jour l'URL
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    router.push(`/dashboard?tab=${tab}`, { scroll: false });
   };
 
   // Initialiser l'avatar si pas encore défini
+  // Se déclenche UNE SEULE FOIS au chargement
   useEffect(() => {
-    if (!userAvatar && defaultUserAvatar) {
+    if (defaultUserAvatar) {
       setUserAvatar(defaultUserAvatar);
     }
-  }, [defaultUserAvatar, userAvatar]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Récupérer le statut de vérification d'identité
+  // Se déclenche UNE SEULE FOIS quand user.id devient disponible
+  useEffect(() => {
+    const fetchVerificationStatus = async () => {
+      if (!user?.id) return;
+
+      try {
+        setIsLoadingVerification(true);
+        const response = await fetch('/api/identity-verification/status');
+        const data = await response.json();
+
+        if (data.success && data.verification) {
+          // Mapper les statuts Prisma aux statuts du dashboard
+          const statusMap: Record<string, 'not_started' | 'pending' | 'verified' | 'rejected'> = {
+            'NOT_STARTED': 'not_started',
+            'PENDING': 'pending',
+            'APPROVED': 'verified',
+            'REJECTED': 'rejected',
+            'EXPIRED': 'rejected'
+          };
+
+          const mappedStatus = statusMap[data.verification.status] || 'not_started';
+          setIdentityVerificationStatus(mappedStatus);
+        } else {
+          // Pas de vérification trouvée
+          setIdentityVerificationStatus('not_started');
+        }
+      } catch (error) {
+        console.error('Erreur récupération statut vérification:', error);
+        // En cas d'erreur, laisser le statut par défaut
+      } finally {
+        setIsLoadingVerification(false);
+      }
+    };
+
+    fetchVerificationStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Afficher le skeleton si des données sont encore en cours de chargement
   const isLoading = authLoading || statsLoading || tontinesLoading || toursLoading || allTontinesLoading || paymentsLoading;
@@ -103,6 +161,7 @@ export default function DashboardWithData() {
         userAvatar={userAvatar || defaultUserAvatar}
         userName={userName}
         userEmail={userEmail}
+        userRole={user?.role}
         userVerification={userVerification}
       />
 
@@ -291,7 +350,7 @@ export default function DashboardWithData() {
               <Button
                 variant={activeTab === "overview" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setActiveTab("overview")}
+                onClick={() => handleTabChange("overview")}
                 className="flex items-center"
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
@@ -300,7 +359,7 @@ export default function DashboardWithData() {
               <Button
                 variant={activeTab === "tontines" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setActiveTab("tontines")}
+                onClick={() => handleTabChange("tontines")}
                 className="flex items-center"
               >
                 <Users className="w-4 h-4 mr-2" />
@@ -309,7 +368,7 @@ export default function DashboardWithData() {
               <Button
                 variant={activeTab === "payments" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setActiveTab("payments")}
+                onClick={() => handleTabChange("payments")}
                 className="flex items-center"
               >
                 <CreditCard className="w-4 h-4 mr-2" />
@@ -318,7 +377,7 @@ export default function DashboardWithData() {
               <Button
                 variant={activeTab === "profile" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setActiveTab("profile")}
+                onClick={() => handleTabChange("profile")}
                 className="flex items-center"
               >
                 <User className="w-4 h-4 mr-2" />

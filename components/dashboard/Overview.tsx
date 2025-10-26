@@ -359,7 +359,7 @@ export default function Overview() {
             </div>
             <div className="space-y-2">
               {filteredTontines.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="text-center py-8 bg-white rounded-md">
                   <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   {allTontines.length === 0 ? (
                     <>
@@ -465,7 +465,7 @@ export default function Overview() {
               <TabsContent value="gains" className="mt-4">
                 <div className="space-y-3">
                   {gains.length === 0 ? (
-                    <div className="text-center py-6">
+                    <div className="text-center py-6 bg-white rounded-md">
                       <Trophy className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                       <p className="text-gray-500 text-sm">Aucun gain prévu</p>
                     </div>
@@ -491,7 +491,7 @@ export default function Overview() {
               <TabsContent value="contributions" className="mt-4">
                 <div className="space-y-3">
                   {contributions.length === 0 ? (
-                    <div className="text-center py-6">
+                    <div className="text-center py-6 bg-white rounded-md">
                       <Coins className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                       <p className="text-gray-500 text-sm">Aucune contribution prévue</p>
                     </div>

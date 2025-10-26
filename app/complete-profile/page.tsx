@@ -1,9 +1,10 @@
 'use client'
 
 import { CompleteProfileForm } from "@/components/complete-profile-form"
+import { AuthStepper } from "@/components/ui/auth-stepper"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Skip } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 export default function CompleteProfilePage() {
@@ -24,43 +25,42 @@ export default function CompleteProfilePage() {
       
       {/* Contenu scrollable par-dessus */}
       <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-4 px-3 py-4 sm:p-6 md:p-10">
-        {/* Header avec progress et skip */}
-        <div className="flex w-full max-w-2xl items-center justify-between mb-3 ">
-          <div className="flex items-center gap-4">
+        <div className="flex w-full max-w-3xl flex-col gap-4">
+          {/* Header avec logo et skip */}
+          <div className="flex w-full items-center justify-between">
             <Image
               src="/images/logo.png"
               alt="Tontine"
-              width={100}
-              height={43}
-              className="w-16 h-auto sm:w-20 drop-shadow-lg"
+              width={90}
+              height={39}
+              className="drop-shadow-lg"
             />
-            {/* <div className="text-white">
-              <h2 className="text-lg sm:text-xl font-bold">Complétez votre profil</h2>
-              <p className="text-sm text-white/70">Étape finale avant d'accéder au dashboard</p>
-            </div> */}
-          </div>
-          <Link 
-            href="/dashboard"
-            className="flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors"
-          >
-            Passer
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="flex w-full max-w-2xl flex-col gap-4 sm:gap-6">
-          <CompleteProfileForm />
-
-          {/* Bouton "Continuer plus tard" */}
-          <div className="flex justify-center">
-            <Link href="/dashboard">
-              <Button
-                variant="outline"
-                className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30 py-3 px-6 rounded-xl font-medium transition-all"
-              >
-                Continuer plus tard
-              </Button>
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1.5 text-white/80 hover:text-white text-xs font-medium transition-colors"
+            >
+              Passer
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
+          </div>
+
+          {/* Stepper */}
+          <AuthStepper currentStep={2} />
+
+          <div className="flex w-full flex-col gap-4 sm:gap-6">
+            <CompleteProfileForm />
+
+            {/* Bouton "Continuer plus tard" */}
+            <div className="flex justify-center">
+              <Link href="/dashboard">
+                <Button
+                  variant="outline"
+                  className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30 py-3 px-6 rounded-xl font-medium transition-all"
+                >
+                  Continuer plus tard
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

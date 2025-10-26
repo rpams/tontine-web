@@ -15,9 +15,9 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
             <div className="relative">
               <Link href="/">
                 <img
-                  src="/images/logo.png"
+                  src="/images/logo-text.png"
                   alt="Logo Tontine"
-                  className="h-6 sm:h-8 w-auto"
+                  className="h-4 sm:h-5 w-auto"
                 />
               </Link>
             </div>

@@ -236,10 +236,10 @@ export default function Payments() {
             <Download className="w-4 h-4 mr-2" />
             Exporter
           </Button>
-          <Button className="flex items-center">
+          {/* <Button className="flex items-center">
             <Plus className="w-4 h-4 mr-2" />
             Nouveau paiement
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -471,16 +471,16 @@ export default function Payments() {
 
       {/* Payments List */}
       {payments.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-12 bg-white rounded-md">
           <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           {filteredPayments.length === 0 && !searchQuery && selectedFilters.status.length === 0 && selectedFilters.type.length === 0 ? (
             <>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun paiement trouvé</h3>
               <p className="text-gray-500 text-sm mb-4">Vos transactions apparaîtront ici</p>
-              <Button>
+              {/* <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Nouveau paiement
-              </Button>
+              </Button> */}
             </>
           ) : (
             <>

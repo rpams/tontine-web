@@ -1,6 +1,7 @@
 "use client"
 
 import { OtpForm } from "@/components/otp-form"
+import { AuthStepper } from "@/components/ui/auth-stepper"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense } from "react"
@@ -19,22 +20,31 @@ function OtpVerificationContent() {
   }
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-4">
-      <a href="#" className="items-center gap-2 self-center font-medium">
+    <div className="flex w-full max-w-3xl flex-col gap-4">
+      {/* <a href="#" className="items-center gap-2 self-center font-medium">
         <Image
           src="/images/logo.png"
           alt="Tontine"
-          width={120}
-          height={52}
+          width={100}
+          height={43}
           className="drop-shadow-lg"
         />
-      </a>
+      </a> */}
 
-      <OtpForm
-        email={email || ''}
-        onBack={handleBack}
-        onComplete={handleComplete}
-      />
+      {/* Stepper */}
+      <div className="mx-auto">
+        <AuthStepper currentStep={1} />
+      </div>
+
+      <div className="flex justify-center">
+        <div className="w-full max-w-sm">
+          <OtpForm
+            email={email || ''}
+            onBack={handleBack}
+            onComplete={handleComplete}
+          />
+        </div>
+      </div>
     </div>
   )
 }
@@ -57,19 +67,22 @@ export default function OtpVerificationPage() {
       </div>
 
       {/* Contenu scrollable par-dessus */}
-      <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-6 p-6 md:p-10">
+      <div className="relative z-10 min-h-svh flex flex-col items-center justify-center gap-4 p-6 md:p-10">
         <Suspense fallback={
-          <div className="flex w-full max-w-sm flex-col gap-4">
+          <div className="flex w-full max-w-3xl flex-col gap-4">
             <div className="items-center gap-2 self-center">
               <Image
                 src="/images/logo.png"
                 alt="Tontine"
-                width={120}
-                height={52}
+                width={100}
+                height={43}
                 className="drop-shadow-lg"
               />
             </div>
-            <div className="animate-pulse bg-white/20 rounded-lg h-64"></div>
+            <AuthStepper currentStep={1} />
+            <div className="flex justify-center">
+              <div className="animate-pulse bg-white/20 rounded-lg h-64 w-full max-w-sm"></div>
+            </div>
           </div>
         }>
           <OtpVerificationContent />

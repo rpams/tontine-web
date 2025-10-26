@@ -23,12 +23,13 @@ import {
   Shield,
   Camera,
   User,
-  MapPin,
-  Calendar,
   IdCard,
   CheckCircle2,
   Clock,
-  X
+  X,
+  Phone,
+  MapPin,
+  Mail
 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -42,19 +43,21 @@ const identityVerificationSchema = z.object({
   documentType: z.enum(["cni", "passport", "driving_license"], {
     required_error: "Veuillez sélectionner le type de document",
   }),
-  documentNumber: z.string()
-    .min(1, "Le numéro de document est requis")
-    .min(5, "Le numéro doit contenir au moins 5 caractères"),
   firstName: z.string()
     .min(1, "Le prénom est requis")
     .min(2, "Le prénom doit contenir au moins 2 caractères"),
   lastName: z.string()
     .min(1, "Le nom est requis")
     .min(2, "Le nom doit contenir au moins 2 caractères"),
-  dateOfBirth: z.string()
-    .min(1, "La date de naissance est requise"),
-  placeOfBirth: z.string()
-    .min(1, "Le lieu de naissance est requis"),
+  telephone: z.string()
+    .min(1, "Le numéro de téléphone est requis")
+    .min(8, "Le numéro doit contenir au moins 8 chiffres"),
+  address: z.string()
+    .min(1, "L'adresse est requise")
+    .min(5, "L'adresse doit contenir au moins 5 caractères"),
+  email: z.string()
+    .min(1, "L'email est requis")
+    .email("Email invalide"),
   frontDocument: z.any().optional(),
   backDocument: z.any().optional(),
 })
@@ -123,6 +126,8 @@ interface IdentityVerificationProps {
     firstName?: string
     lastName?: string
     email?: string
+    telephone?: string
+    address?: string
   }
 }
 
@@ -154,11 +159,11 @@ export function IdentityVerification({
     mode: "onChange",
     defaultValues: {
       documentType: undefined,
-      documentNumber: "",
       firstName: userData?.firstName || "",
       lastName: userData?.lastName || "",
-      dateOfBirth: "",
-      placeOfBirth: "",
+      telephone: userData?.telephone || "",
+      address: userData?.address || "",
+      email: userData?.email || "",
     },
   })
 
@@ -207,7 +212,7 @@ export function IdentityVerification({
           isStepValid = !!documentType
           break
         case 2:
-          const fieldsToValidate = ["documentNumber", "firstName", "lastName", "dateOfBirth", "placeOfBirth"]
+          const fieldsToValidate = ["firstName", "lastName", "telephone", "address", "email"]
           const results = await Promise.all(fieldsToValidate.map(field => trigger(field as any)))
           isStepValid = results.every(result => result)
           break
@@ -235,28 +240,108 @@ export function IdentityVerification({
   }
 
   const onSubmit = async (data: IdentityVerificationFormData) => {
+    // Ne soumettre que si on est à la dernière étape (étape 4)
+    if (currentStep !== VERIFICATION_STEPS.length) {
+      console.warn("Tentative de soumission avant la dernière étape")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      // Simulation de l'envoi des données
-      console.log("Verification data:", {
-        ...data,
-        frontDocument: frontDocumentFile,
-        backDocument: backDocumentFile,
+      // Étape 1: Upload du document recto (obligatoire)
+      if (!frontDocumentFile) {
+        toast.error("Le document recto est obligatoire")
+        setIsLoading(false)
+        return
+      }
+
+      toast.info("Upload du document en cours...")
+
+      let frontDocumentUrl = ""
+      let backDocumentUrl = ""
+
+      // Upload document recto
+      const frontFormData = new FormData()
+      frontFormData.append('file', frontDocumentFile)
+      frontFormData.append('type', 'identity')
+
+      const frontUploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: frontFormData
       })
 
-      // Simuler un délai d'upload
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      const frontUploadResult = await frontUploadResponse.json()
+
+      if (!frontUploadResult.success) {
+        throw new Error(frontUploadResult.error || "Erreur lors de l'upload du document recto")
+      }
+
+      frontDocumentUrl = frontUploadResult.url
+
+      // Étape 2: Upload du document verso (si CNI)
+      if (documentType === 'cni' && backDocumentFile) {
+        const backFormData = new FormData()
+        backFormData.append('file', backDocumentFile)
+        backFormData.append('type', 'identity')
+
+        const backUploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: backFormData
+        })
+
+        const backUploadResult = await backUploadResponse.json()
+
+        if (!backUploadResult.success) {
+          throw new Error(backUploadResult.error || "Erreur lors de l'upload du document verso")
+        }
+
+        backDocumentUrl = backUploadResult.url
+      }
+
+      // Étape 3: Soumettre la vérification d'identité
+      toast.info("Soumission de votre vérification...")
+
+      const verificationResponse = await fetch('/api/identity-verification/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          documentType: data.documentType,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          telephone: data.telephone,
+          address: data.address,
+          email: data.email,
+          frontDocumentUrl,
+          backDocumentUrl: backDocumentUrl || null
+        })
+      })
+
+      const verificationResult = await verificationResponse.json()
+
+      if (!verificationResult.success) {
+        throw new Error(verificationResult.error || "Erreur lors de la soumission")
+      }
 
       toast.success("Vérification d'identité soumise avec succès !")
+      toast.info("Un administrateur examinera votre demande sous 24-48h")
 
+      // Redirection
       if (onComplete) {
         onComplete()
       } else {
-        router.push("/dashboard")
+        // Délai pour que l'utilisateur voie les messages
+        setTimeout(() => {
+          router.push("/dashboard")
+        }, 2000)
       }
+
     } catch (error) {
-      toast.error("Une erreur est survenue lors de la soumission.")
+      console.error("Erreur soumission vérification:", error)
+      const errorMessage = error instanceof Error ? error.message : "Une erreur est survenue lors de la soumission."
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -275,9 +360,8 @@ export function IdentityVerification({
       case 1:
         return !!documentType
       case 2:
-        return !!(allFieldsCompleted.documentNumber && allFieldsCompleted.firstName &&
-                 allFieldsCompleted.lastName && allFieldsCompleted.dateOfBirth &&
-                 allFieldsCompleted.placeOfBirth)
+        return !!(allFieldsCompleted.firstName && allFieldsCompleted.lastName &&
+                 allFieldsCompleted.telephone && allFieldsCompleted.address && allFieldsCompleted.email)
       case 3:
         return !!frontDocumentFile && (documentType !== 'cni' || !!backDocumentFile)
       case 4:
@@ -477,20 +561,21 @@ export function IdentityVerification({
                 <div className="space-y-6">
                   <div>
                     <Label className="text-base font-semibold mb-4 block">
-                      Informations du document d'identité
+                      Informations personnelles et de contact
                     </Label>
                     <p className="text-sm text-gray-600 mb-4">
-                      Saisissez les informations exactement comme elles apparaissent sur votre document.
+                      Toutes les informations du document d'identité seront extraites des photos.
+                      Les informations ci-dessous proviennent de votre profil.
                     </p>
-                    {(userData?.firstName || userData?.lastName) && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
+                    {(userData?.firstName || userData?.lastName || userData?.email) && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
                         <div className="flex items-start gap-3">
-                          <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div className="text-sm text-green-800">
-                            <p className="font-medium mb-1">Informations pré-remplies</p>
+                          <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div className="text-sm text-blue-800">
+                            <p className="font-medium mb-1">Informations issues de votre profil</p>
                             <p className="text-xs">
-                              Nous avons pré-rempli votre nom et prénom depuis votre profil.
-                              Vérifiez qu'ils correspondent exactement à votre document d'identité et modifiez si nécessaire.
+                              Ces informations sont extraites de votre profil et ne peuvent pas être modifiées ici.
+                              Pour les modifier, veuillez d'abord mettre à jour votre profil.
                             </p>
                           </div>
                         </div>
@@ -500,45 +585,10 @@ export function IdentityVerification({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="documentNumber">
-                        Numéro du document *
-                      </Label>
-                      <div className="relative">
-                        <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input
-                          id="documentNumber"
-                          type="text"
-                          placeholder="Ex: 12345678901234"
-                          className={cn("pl-10", errors.documentNumber && "border-red-500")}
-                          {...register("documentNumber")}
-                        />
-                      </div>
-                      {errors.documentNumber && (
-                        <p className="text-sm text-red-600">{errors.documentNumber.message}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="dateOfBirth">Date de naissance *</Label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input
-                          id="dateOfBirth"
-                          type="date"
-                          className={cn("pl-10", errors.dateOfBirth && "border-red-500")}
-                          {...register("dateOfBirth")}
-                        />
-                      </div>
-                      {errors.dateOfBirth && (
-                        <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="firstName">
                         Prénom(s) *
                         {userData?.firstName && (
-                          <span className="text-xs text-green-600 ml-2">✓ Pré-rempli depuis votre profil</span>
+                          <span className="text-xs text-green-600 ml-2">✓ Pré-rempli</span>
                         )}
                       </Label>
                       <div className="relative">
@@ -546,20 +596,16 @@ export function IdentityVerification({
                         <Input
                           id="firstName"
                           type="text"
-                          placeholder="Prénom(s) tel(s) qu'écrit(s)"
+                          placeholder="Votre prénom"
+                          readOnly
                           className={cn(
-                            "pl-10",
+                            "pl-10 bg-gray-50 cursor-not-allowed",
                             errors.firstName && "border-red-500",
-                            userData?.firstName && "bg-green-50 border-green-200"
+                            userData?.firstName && "border-green-200"
                           )}
                           {...register("firstName")}
                         />
                       </div>
-                      {userData?.firstName && (
-                        <p className="text-xs text-green-600">
-                          Vérifiez que ce prénom correspond exactement à votre document d'identité
-                        </p>
-                      )}
                       {errors.firstName && (
                         <p className="text-sm text-red-600">{errors.firstName.message}</p>
                       )}
@@ -569,7 +615,7 @@ export function IdentityVerification({
                       <Label htmlFor="lastName">
                         Nom de famille *
                         {userData?.lastName && (
-                          <span className="text-xs text-green-600 ml-2">✓ Pré-rempli depuis votre profil</span>
+                          <span className="text-xs text-green-600 ml-2">✓ Pré-rempli</span>
                         )}
                       </Label>
                       <div className="relative">
@@ -577,40 +623,113 @@ export function IdentityVerification({
                         <Input
                           id="lastName"
                           type="text"
-                          placeholder="Nom de famille"
+                          placeholder="Votre nom"
+                          readOnly
                           className={cn(
-                            "pl-10",
+                            "pl-10 bg-gray-50 cursor-not-allowed",
                             errors.lastName && "border-red-500",
-                            userData?.lastName && "bg-green-50 border-green-200"
+                            userData?.lastName && "border-green-200"
                           )}
                           {...register("lastName")}
                         />
                       </div>
-                      {userData?.lastName && (
-                        <p className="text-xs text-green-600">
-                          Vérifiez que ce nom correspond exactement à votre document d'identité
-                        </p>
-                      )}
                       {errors.lastName && (
                         <p className="text-sm text-red-600">{errors.lastName.message}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label htmlFor="placeOfBirth">Lieu de naissance *</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">
+                        Email *
+                        {userData?.email && (
+                          <span className="text-xs text-green-600 ml-2">✓ Pré-rempli</span>
+                        )}
+                      </Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                         <Input
-                          id="placeOfBirth"
-                          type="text"
-                          placeholder="Ville, Pays"
-                          className={cn("pl-10", errors.placeOfBirth && "border-red-500")}
-                          {...register("placeOfBirth")}
+                          id="email"
+                          type="email"
+                          placeholder="votre@email.com"
+                          readOnly
+                          className={cn(
+                            "pl-10 bg-gray-50 cursor-not-allowed",
+                            errors.email && "border-red-500",
+                            userData?.email && "border-green-200"
+                          )}
+                          {...register("email")}
                         />
                       </div>
-                      {errors.placeOfBirth && (
-                        <p className="text-sm text-red-600">{errors.placeOfBirth.message}</p>
+                      {errors.email && (
+                        <p className="text-sm text-red-600">{errors.email.message}</p>
                       )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="telephone">
+                        Numéro de téléphone *
+                        {userData?.telephone && (
+                          <span className="text-xs text-green-600 ml-2">✓ Pré-rempli</span>
+                        )}
+                      </Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                          id="telephone"
+                          type="tel"
+                          placeholder="+229 XX XX XX XX"
+                          readOnly
+                          className={cn(
+                            "pl-10 bg-gray-50 cursor-not-allowed",
+                            errors.telephone && "border-red-500",
+                            userData?.telephone && "border-green-200"
+                          )}
+                          {...register("telephone")}
+                        />
+                      </div>
+                      {errors.telephone && (
+                        <p className="text-sm text-red-600">{errors.telephone.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="address">
+                        Adresse complète *
+                        {userData?.address && (
+                          <span className="text-xs text-green-600 ml-2">✓ Pré-rempli</span>
+                        )}
+                      </Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-3 text-muted-foreground w-4 h-4" />
+                        <Input
+                          id="address"
+                          type="text"
+                          placeholder="Votre adresse complète"
+                          readOnly
+                          className={cn(
+                            "pl-10 bg-gray-50 cursor-not-allowed",
+                            errors.address && "border-red-500",
+                            userData?.address && "border-green-200"
+                          )}
+                          {...register("address")}
+                        />
+                      </div>
+                      {errors.address && (
+                        <p className="text-sm text-red-600">{errors.address.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-blue-800">
+                        <p className="font-medium mb-1">Note importante</p>
+                        <p className="text-xs">
+                          Les informations du document (numéro, date de naissance, etc.) seront automatiquement
+                          extraites des photos que vous fournirez à l'étape suivante.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -811,7 +930,7 @@ export function IdentityVerification({
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     {/* Résumé des informations */}
                     <div className="space-y-4">
-                      <h3 className="font-medium text-gray-900 text-sm sm:text-base">Informations du document</h3>
+                      <h3 className="font-medium text-gray-900 text-sm sm:text-base">Informations personnelles</h3>
                       <div className="bg-gray-50 rounded-lg p-3 sm:p-4 space-y-3">
                         <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
                           <span className="text-sm text-gray-600">Type de document:</span>
@@ -820,22 +939,22 @@ export function IdentityVerification({
                           </span>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                          <span className="text-sm text-gray-600">Numéro:</span>
-                          <span className="text-sm font-medium break-all">{watch("documentNumber")}</span>
-                        </div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
                           <span className="text-sm text-gray-600">Nom complet:</span>
                           <span className="text-sm font-medium">
                             {watch("firstName")} {watch("lastName")}
                           </span>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                          <span className="text-sm text-gray-600">Date de naissance:</span>
-                          <span className="text-sm font-medium">{watch("dateOfBirth")}</span>
+                          <span className="text-sm text-gray-600">Email:</span>
+                          <span className="text-sm font-medium break-all">{watch("email")}</span>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                          <span className="text-sm text-gray-600">Lieu de naissance:</span>
-                          <span className="text-sm font-medium">{watch("placeOfBirth")}</span>
+                          <span className="text-sm text-gray-600">Téléphone:</span>
+                          <span className="text-sm font-medium">{watch("telephone")}</span>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                          <span className="text-sm text-gray-600">Adresse:</span>
+                          <span className="text-sm font-medium break-all">{watch("address")}</span>
                         </div>
                       </div>
 
