@@ -53,9 +53,9 @@ export function OtpForm({
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
   const router = useRouter()
 
-  // Initialiser le code OTP en mode développement
+  // Initialiser le code OTP pour les tests
   useEffect(() => {
-    if (initialDevOtp && process.env.NODE_ENV === 'development') {
+    if (initialDevOtp) {
       setDevOtpCode(initialDevOtp)
     }
   }, [initialDevOtp])
@@ -390,32 +390,30 @@ export function OtpForm({
                 </Button>
               )}
 
-              {/* Bouton pour passer l'OTP (développement uniquement) */}
-              {process.env.NODE_ENV === 'development' && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    if (onComplete) {
-                      onComplete()
-                    } else {
-                      router.push("/dashboard")
-                    }
-                  }}
-                  className="text-xs text-gray-400 hover:text-gray-600"
-                >
-                  Passer l'OTP (dev)
-                </Button>
-              )}
+              {/* Bouton pour passer l'OTP (mode test) */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (onComplete) {
+                    onComplete()
+                  } else {
+                    router.push("/dashboard")
+                  }
+                }}
+                className="text-xs text-gray-400 hover:text-gray-600"
+              >
+                Passer l'OTP (test)
+              </Button>
             </div>
 
-            {/* Code de test pour développement */}
-            {process.env.NODE_ENV === 'development' && devOtpCode && (
+            {/* Code de test */}
+            {devOtpCode && (
               <div className="mt-2 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-lg shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-yellow-900 mb-1">
-                      🔑 Mode DEV - Code OTP
+                      🔑 Mode TEST - Code OTP
                     </p>
                     <p className="text-2xl font-bold text-yellow-700 tracking-wider font-mono">
                       {devOtpCode}
