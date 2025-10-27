@@ -11,6 +11,7 @@ import AdminLayout from "@/components/layouts/AdminLayout";
 import AdminSkeleton from "@/components/skeletons/AdminSkeleton";
 import { ValidationModal } from "@/components/admin/ValidationModal";
 import { useAdminStats, useAdminUsers, useAdminTontines, useAdminPayments, useAdminPendingValidations, useReviewIdentityVerification, useUpdateUserStatus } from "@/lib/hooks/useAdmin";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -130,6 +131,23 @@ function AdminPanelContent() {
   const USERS_PER_PAGE = 20;
   const TONTINES_PER_PAGE = 20;
   const PAYMENTS_PER_PAGE = 20;
+
+  // Récupérer les données de l'utilisateur connecté
+  const { user, profile } = useAuth();
+
+  // Données utilisateur pour la navbar
+  const userName = profile?.showUsernameByDefault && profile?.username
+    ? profile.username
+    : `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || user?.name || 'Admin';
+
+  const userEmail = user?.email || 'admin@tontine.app';
+  const userAvatar = profile?.avatarUrl || profile?.profileImageUrl || "/avatars/avatar-portrait-svgrepo-com.svg";
+  const userRole = user?.role || 'ADMIN';
+
+  const userVerification = {
+    isEmailVerified: user?.emailVerified || false,
+    isDocumentVerified: false
+  };
 
   // Hooks pour récupérer les données
   const { data: statsData, isLoading: statsLoading } = useAdminStats();
@@ -331,8 +349,11 @@ function AdminPanelContent() {
 
       <div className="relative z-10">
         <NavbarDashboard
-          userName="Admin"
-          userEmail="admin@tontine.app"
+          userAvatar={userAvatar}
+          userName={userName}
+          userEmail={userEmail}
+          userRole={userRole}
+          userVerification={userVerification}
         />
         <div className="bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 md:px-12 py-2">
@@ -360,21 +381,21 @@ function AdminPanelContent() {
           <div className="flex items-center space-x-2.5">
             <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
               <div className="w-9 h-9 rounded-full overflow-hidden">
-                <img 
-                  src="/avatars/avatar-jkjnlef.svg" 
-                  alt="Admin"
+                <img
+                  src={userAvatar}
+                  alt={userName}
                   className="w-full h-full object-cover"
                 />
               </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <h3 className="font-medium text-gray-900 font-poppins truncate text-sm">Admin Principal</h3>
+                <h3 className="font-medium text-gray-900 font-poppins truncate text-sm">{userName}</h3>
                 <Shield className="w-3 h-3 text-red-600 flex-shrink-0" />
               </div>
               <div className="flex items-center text-xs text-gray-500">
                 <span className="text-gray-400 mr-1">@</span>
-                <span className="truncate">admin@tontine.com</span>
+                <span className="truncate">{userEmail}</span>
               </div>
             </div>
           </div>

@@ -411,3 +411,59 @@ export function useAdminUserDetails(userId: string | null) {
     staleTime: 2 * 60 * 1000, // 2 minutes
   })
 }
+
+// Hook pour récupérer les détails d'une tontine (admin)
+export function useAdminTontineDetails(tontineId: string | null) {
+  return useQuery({
+    queryKey: ['admin', 'tontine-details', tontineId],
+    queryFn: async () => {
+      if (!tontineId) return null
+
+      const response = await fetch(`/api/admin/tontines/${tontineId}`, {
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des détails de la tontine')
+      }
+
+      return response.json()
+    },
+    enabled: !!tontineId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  })
+}
+
+// Hook pour mettre à jour l'ordre des gagnants d'une tontine
+export function useUpdateWinnersOrder() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ tontineId, winnersOrder }: {
+      tontineId: string
+      winnersOrder: Array<{ participantId: string; position?: number }>
+    }) => {
+      const response = await fetch('/api/admin/tontines/winners-order', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ tontineId, winnersOrder })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Erreur lors de la mise à jour de l\'ordre')
+      }
+
+      return response.json()
+    },
+    onSuccess: (_data, variables) => {
+      // Invalider les requêtes des tontines pour rafraîchir les données
+      queryClient.invalidateQueries({ queryKey: ['admin', 'tontines'] })
+      // Invalider aussi les détails de cette tontine spécifique
+      queryClient.invalidateQueries({ queryKey: ['admin', 'tontine-details', variables.tontineId] })
+    }
+  })
+}

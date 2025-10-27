@@ -30,6 +30,9 @@ import {
   GripVertical,
 } from "lucide-react";
 import { Label } from "../ui/label";
+import { useUpdateWinnersOrder, useAdminTontineDetails } from "@/lib/hooks/useAdmin";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TontineDetailsModalProps {
   open: boolean;
@@ -52,6 +55,13 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [editableOrder, setEditableOrder] = useState<any[]>([]);
 
+  // Hook pour récupérer les détails complets de la tontine
+  const { data: tontineDetailsData, isLoading: isLoadingDetails } = useAdminTontineDetails(tontine?.id || null);
+  const tontineDetails = tontineDetailsData?.tontine;
+
+  // Hook pour mettre à jour l'ordre des gagnants
+  const updateWinnersOrderMutation = useUpdateWinnersOrder();
+
   if (!tontine) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -62,6 +72,42 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
     );
   }
 
+  // Si les détails ne sont pas encore chargés, afficher un skeleton
+  if (isLoadingDetails || !tontineDetails) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="!max-w-4xl w-[95vw] max-h-[85vh] md:max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-8 w-3/4" />
+            <div className="space-y-2">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Utiliser les vraies données depuis l'API
+  const winnersOrder = tontineDetails.winnersOrder || [];
+  const participants = tontineDetails.participants || [];
+  const rounds = tontineDetails.rounds || [];
+
+  // Formater les détails pour l'affichage
+  const formattedDetails = {
+    description: tontineDetails.description || "Aucune description disponible",
+    frequency: tontineDetails.frequencyType === 'MONTHLY' ? 'Mensuelle' :
+               tontineDetails.frequencyType === 'WEEKLY' ? 'Hebdomadaire' :
+               tontineDetails.frequencyType === 'DAILY' ? 'Quotidienne' : 'Personnalisée',
+    contributionAmount: `${new Intl.NumberFormat('fr-FR').format(tontineDetails.amountPerRound || 0)} FCFA`,
+    penalty: "5,000 FCFA", // Cette valeur pourrait venir de la base de données si disponible
+    createdBy: tontineDetails.creator?.name || "Inconnu",
+    createdAt: tontineDetails.createdAt ? new Date(tontineDetails.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : "Date inconnue",
+  };
+
   // Initialize editable order when entering edit mode (exclude current winner - they're next and can't be changed)
   const startEditing = () => {
     const editableItems = winnersOrder.filter(winner => winner.status === 'upcoming');
@@ -69,10 +115,25 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
     setIsEditingOrder(true);
   };
 
-  const saveOrder = () => {
-    // Here you would save the new order to your backend
-    console.log("New order:", editableOrder);
-    setIsEditingOrder(false);
+  const saveOrder = async () => {
+    try {
+      // Préparer les données pour l'API avec les vrais participantId
+      const winnersOrderData = editableOrder.map((winner, index) => ({
+        participantId: winner.participantId,
+        position: index + 1
+      }));
+
+      await updateWinnersOrderMutation.mutateAsync({
+        tontineId: tontine.id,
+        winnersOrder: winnersOrderData
+      });
+
+      toast.success("Ordre des gagnants mis à jour avec succès");
+      setIsEditingOrder(false);
+    } catch (error: any) {
+      console.error("Erreur lors de la sauvegarde de l'ordre:", error);
+      toast.error(error.message || "Erreur lors de la sauvegarde de l'ordre des gagnants");
+    }
   };
 
   const cancelEditing = () => {
@@ -117,46 +178,6 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
     setEditableOrder(newOrder);
   };
 
-  // Mock data
-  const tontineDetails = {
-    description: "Tontine familiale pour les projets communs et l'entraide financière",
-    frequency: "Mensuelle",
-    contributionAmount: "85,000 FCFA",
-    penalty: "5,000 FCFA",
-    createdBy: "Jean Dupont",
-    createdAt: "15 Mars 2024",
-  };
-
-  const participants = [
-    { id: 1, name: "Jean Dupont", email: "jean@example.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "active", joinDate: "15 Mars 2024", position: 1 },
-    { id: 2, name: "Marie Kone", email: "marie@example.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "active", joinDate: "16 Mars 2024", position: 2 },
-    { id: 3, name: "Amadou Diallo", email: "amadou@example.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "active", joinDate: "18 Mars 2024", position: 3 },
-    { id: 4, name: "Fatou Traore", email: "fatou@example.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "pending", joinDate: "20 Mars 2024", position: 4 },
-    { id: 5, name: "Ibrahim Sidibe", email: "ibrahim.sidibe@email.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "active", joinDate: "22 Mars 2024", position: 5 },
-    { id: 6, name: "Aissatou Ba", email: "aissatou.ba@gmail.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "active", joinDate: "25 Mars 2024", position: 6 },
-    { id: 7, name: "Mamadou Camara", email: "mamadou.camara@outlook.com", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "active", joinDate: "28 Mars 2024", position: 7 },
-    { id: 8, name: "Kadiatou Diallo", email: "kadiatou.diallo@hotmail.fr", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "active", joinDate: "30 Mars 2024", position: 8 },
-    { id: 9, name: "Moussa Toure", email: "moussa.toure@yahoo.fr", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "pending", joinDate: "2 Avril 2024", position: 9 },
-  ];
-
-  const tours = [
-    { id: 1, month: "Avril 2024", winner: "Jean Dupont", amount: "85,000 FCFA", status: "completed", date: "30 Avril 2024" },
-    { id: 2, month: "Mai 2024", winner: "Marie Kone", amount: "85,000 FCFA", status: "completed", date: "31 Mai 2024" },
-    { id: 3, month: "Juin 2024", winner: "Amadou Diallo", amount: "85,000 FCFA", status: "current", date: "30 Juin 2024" },
-    { id: 4, month: "Juillet 2024", winner: "Fatou Traore", amount: "85,000 FCFA", status: "upcoming", date: "31 Juillet 2024" },
-  ];
-
-  const winnersOrder = [
-    { position: 1, name: "Jean Dupont", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "completed" },
-    { position: 2, name: "Marie Kone", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "completed" },
-    { position: 3, name: "Amadou Diallo", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "current" },
-    { position: 4, name: "Fatou Traore", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "upcoming" },
-    { position: 5, name: "Ibrahim Sidibe", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "upcoming" },
-    { position: 6, name: "Aissatou Ba", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "upcoming" },
-    { position: 7, name: "Mamadou Camara", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "upcoming" },
-    { position: 8, name: "Kadiatou Diallo", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "upcoming" },
-    { position: 9, name: "Moussa Toure", avatar: "/avatars/avatar-portrait-svgrepo-com.svg", status: "upcoming" },
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -220,15 +241,15 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
                 <div className="bg-white border rounded-lg p-3 sm:p-4 space-y-2 sm:space-y-3">
                   <div className="flex justify-between">
                     <span className="text-xs sm:text-sm text-gray-600">Contribution:</span>
-                    <span className="text-xs sm:text-sm font-medium">{tontineDetails.contributionAmount}</span>
+                    <span className="text-xs sm:text-sm font-medium">{formattedDetails.contributionAmount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs sm:text-sm text-gray-600">Pénalité:</span>
-                    <span className="text-xs sm:text-sm font-medium">{tontineDetails.penalty}</span>
+                    <span className="text-xs sm:text-sm font-medium">{formattedDetails.penalty}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs sm:text-sm text-gray-600">Fréquence:</span>
-                    <span className="text-xs sm:text-sm font-medium">{tontineDetails.frequency}</span>
+                    <span className="text-xs sm:text-sm font-medium">{formattedDetails.frequency}</span>
                   </div>
                 </div>
               </div>
@@ -269,16 +290,16 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
               <div className="bg-white border rounded-lg p-3 sm:p-4 space-y-3">
                 <div>
                   <span className="text-xs sm:text-sm text-gray-600">Description:</span>
-                  <p className="mt-1 text-xs sm:text-sm text-gray-900">{tontineDetails.description}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-gray-900">{formattedDetails.description}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                   <div className="flex justify-between sm:block">
                     <span className="text-xs sm:text-sm text-gray-600">Créée par:</span>
-                    <span className="text-xs sm:text-sm font-medium text-gray-900 sm:mt-1 sm:block">{tontineDetails.createdBy}</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-900 sm:mt-1 sm:block">{formattedDetails.createdBy}</span>
                   </div>
                   <div className="flex justify-between sm:block">
                     <span className="text-xs sm:text-sm text-gray-600">Date création:</span>
-                    <span className="text-xs sm:text-sm font-medium text-gray-900 sm:mt-1 sm:block">{tontineDetails.createdAt}</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-900 sm:mt-1 sm:block">{formattedDetails.createdAt}</span>
                   </div>
                 </div>
               </div>
@@ -293,9 +314,9 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                        <AvatarImage src={participant.avatar} />
+                        <AvatarImage src={participant.avatarUrl} />
                         <AvatarFallback className="text-xs">
-                          {participant.name.split(' ').map(n => n[0]).join('')}
+                          {participant.name.split(' ').map((n: string) => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -306,11 +327,11 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
                           </Badge>
                         </div>
                         <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[200px]">{participant.email}</p>
-                        <p className="text-xs text-gray-400">{participant.joinDate}</p>
+                        <p className="text-xs text-gray-400">{new Date(participant.joinedAt).toLocaleDateString('fr-FR')}</p>
                       </div>
                     </div>
-                    <Badge variant={participant.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                      {participant.status === 'active' ? 'Actif' : 'En attente'}
+                    <Badge variant={participant.isActive ? 'default' : 'secondary'} className="text-xs">
+                      {participant.isActive ? 'Actif' : 'Inactif'}
                     </Badge>
                   </div>
                 </div>
@@ -321,40 +342,46 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
           {/* Onglet Tours */}
           <TabsContent value="tours" className="space-y-2 mt-4">
             <div className="space-y-2">
-              {tours.map((tour) => (
-                <div key={tour.id} className={`bg-white border rounded-lg p-3 ${tour.status === 'current' ? 'border-blue-200 bg-blue-50/30' : ''}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        tour.status === 'completed' ? 'bg-green-100 text-green-600' :
-                        tour.status === 'current' ? 'bg-blue-100 text-blue-600' :
-                        'bg-gray-100 text-gray-600'
-                      }`}>
-                        {tour.status === 'completed' ? <CheckCircle className="w-4 h-4" /> :
-                         tour.status === 'current' ? <Clock className="w-4 h-4" /> :
-                         <AlertCircle className="w-4 h-4" />}
+              {rounds.map((round) => {
+                const roundStatus = round.status === 'COMPLETED' ? 'completed' :
+                                  round.status === 'COLLECTING' ? 'current' :
+                                  'upcoming';
+
+                return (
+                  <div key={round.id} className={`bg-white border rounded-lg p-3 ${roundStatus === 'current' ? 'border-blue-200 bg-blue-50/30' : ''}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          roundStatus === 'completed' ? 'bg-green-100 text-green-600' :
+                          roundStatus === 'current' ? 'bg-blue-100 text-blue-600' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {roundStatus === 'completed' ? <CheckCircle className="w-4 h-4" /> :
+                           roundStatus === 'current' ? <Clock className="w-4 h-4" /> :
+                           <AlertCircle className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Tour {round.roundNumber}</p>
+                          <p className="text-xs text-gray-500">{round.winner?.name || 'Non assigné'}</p>
+                          <p className="text-xs text-gray-400">{new Date(round.dueDate).toLocaleDateString('fr-FR')}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{tour.month}</p>
-                        <p className="text-xs text-gray-500">{tour.winner}</p>
-                        <p className="text-xs text-gray-400">{tour.date}</p>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-gray-900">{new Intl.NumberFormat('fr-FR').format(round.expectedAmount)} FCFA</p>
+                        <Badge variant={
+                          roundStatus === 'completed' ? 'default' :
+                          roundStatus === 'current' ? 'secondary' :
+                          'outline'
+                        } className="text-xs">
+                          {roundStatus === 'completed' ? 'Terminé' :
+                           roundStatus === 'current' ? 'En cours' :
+                           'À venir'}
+                        </Badge>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-900">{tour.amount}</p>
-                      <Badge variant={
-                        tour.status === 'completed' ? 'default' :
-                        tour.status === 'current' ? 'secondary' :
-                        'outline'
-                      } className="text-xs">
-                        {tour.status === 'completed' ? 'Terminé' :
-                         tour.status === 'current' ? 'En cours' :
-                         'À venir'}
-                      </Badge>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
 
@@ -376,13 +403,24 @@ export default function TontineDetailsModal({ open, onOpenChange, tontine }: Ton
                     </Button>
                   ) : (
                     <>
-                      <Button size="sm" variant="outline" onClick={cancelEditing} className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={cancelEditing}
+                        disabled={updateWinnersOrderMutation.isPending}
+                        className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
+                      >
                         <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Annuler
                       </Button>
-                      <Button size="sm" onClick={saveOrder} className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4">
+                      <Button
+                        size="sm"
+                        onClick={saveOrder}
+                        disabled={updateWinnersOrderMutation.isPending}
+                        className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
+                      >
                         <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        Sauver
+                        {updateWinnersOrderMutation.isPending ? "Sauvegarde..." : "Sauver"}
                       </Button>
                     </>
                   )}

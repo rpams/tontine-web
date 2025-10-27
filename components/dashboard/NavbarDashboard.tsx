@@ -72,7 +72,7 @@ export default function NavbarDashboard({
             <img
               src="/images/logo-text2.png"
               alt="Logo Tontine"
-              className="w-18 h-12 sm:w-28 sm:h-16 object-contain"
+              className="w-25 h-12 sm:w-28 sm:h-16 object-contain"
             />
           </div>
 

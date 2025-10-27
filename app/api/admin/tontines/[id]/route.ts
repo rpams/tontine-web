@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { PrismaClient } from '@/lib/generated/prisma'
-
-const prisma = new PrismaClient()
+import { requireAdmin } from '@/lib/api/auth-helpers'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin(request)
+  if ('error' in auth) return auth.error
+
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers
-    })
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-    }
-
-    const userId = session.user.id
     const { id: tontineId } = await params
 
-    // Récupérer la tontine avec toutes les données détaillées
+    // Récupérer la tontine avec toutes les données détaillées (admin peut tout voir)
     const tontine = await prisma.tontine.findUnique({
       where: { id: tontineId },
       include: {
@@ -28,7 +20,15 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            email: true
+            email: true,
+            profile: {
+              select: {
+                avatarUrl: true,
+                profileImageUrl: true,
+                firstName: true,
+                lastName: true
+              }
+            }
           }
         },
         participants: {
@@ -56,6 +56,15 @@ export async function GET(
                 paidAt: true,
                 roundId: true
               }
+            },
+            wonRounds: {
+              select: {
+                id: true,
+                roundNumber: true,
+                status: true,
+                dueDate: true,
+                completedAt: true
+              }
             }
           },
           orderBy: { joinedAt: 'asc' }
@@ -72,6 +81,7 @@ export async function GET(
                     profile: {
                       select: {
                         avatarUrl: true,
+                        profileImageUrl: true,
                         firstName: true,
                         lastName: true
                       }
@@ -106,14 +116,6 @@ export async function GET(
       return NextResponse.json({ error: 'Tontine non trouvée' }, { status: 404 })
     }
 
-    // Vérifier que l'utilisateur a accès à cette tontine
-    const isOwner = tontine.creatorId === userId
-    const isParticipant = tontine.participants.some(p => p.userId === userId)
-
-    if (!isOwner && !isParticipant) {
-      return NextResponse.json({ error: 'Accès non autorisé à cette tontine' }, { status: 403 })
-    }
-
     // Trouver le prochain round
     const nextRound = tontine.rounds.find(round =>
       round.status === 'PENDING' || round.status === 'COLLECTING'
@@ -130,18 +132,23 @@ export async function GET(
       const paidPayments = allPayments.filter(p => p.status === 'PAID')
       const pendingPayments = allPayments.filter(p => p.status === 'PENDING')
 
+      const displayName = participant.user.profile?.firstName && participant.user.profile?.lastName
+        ? `${participant.user.profile.firstName} ${participant.user.profile.lastName}`
+        : participant.user.name
+
       return {
         id: participant.id,
         userId: participant.user.id,
-        name: participant.user.name,
+        name: displayName,
         email: participant.user.email,
         firstName: participant.user.profile?.firstName,
         lastName: participant.user.profile?.lastName,
-        avatarUrl: participant.user.profile?.avatarUrl || participant.user.profile?.profileImageUrl,
+        avatarUrl: participant.user.profile?.avatarUrl || participant.user.profile?.profileImageUrl || '/avatars/avatar-portrait-svgrepo-com.svg',
         sharesCount: participant.sharesCount,
         totalCommitted: participant.totalCommitted,
         isActive: participant.isActive,
         joinedAt: participant.joinedAt,
+        position: tontine.participants.indexOf(participant) + 1,
 
         // Statistiques de paiement
         totalPayments: allPayments.length,
@@ -149,19 +156,19 @@ export async function GET(
         pendingPayments: pendingPayments.length,
         isUpToDate: pendingPayments.length === 0,
 
-        // Vérifier s'il a gagné des rounds
-        wonRounds: tontine.rounds.filter(round => round.winnerId === participant.id)
+        // Rounds gagnés
+        wonRounds: participant.wonRounds
       }
     })
 
     // Formatage des rounds avec détails
     const roundsWithDetails = tontine.rounds.map(round => {
-      const totalExpected = round.expectedAmount * tontine.participants.length
-      const totalCollected = round.payments.reduce((sum, payment) =>
-        payment.status === 'PAID' ? sum + payment.amount : sum, 0
-      )
       const paymentsReceived = round.payments.filter(p => p.status === 'PAID').length
       const totalParticipants = tontine.participants.length
+
+      const winnerDisplayName = round.winner?.user.profile?.firstName && round.winner?.user.profile?.lastName
+        ? `${round.winner.user.profile.firstName} ${round.winner.user.profile.lastName}`
+        : round.winner?.user.name
 
       return {
         id: round.id,
@@ -179,17 +186,16 @@ export async function GET(
         // Détails du gagnant
         winner: round.winner ? {
           id: round.winner.id,
+          participantId: round.winner.id,
           userId: round.winner.user.id,
-          name: round.winner.user.name,
+          name: winnerDisplayName,
           email: round.winner.user.email,
           firstName: round.winner.user.profile?.firstName,
           lastName: round.winner.user.profile?.lastName,
-          avatarUrl: round.winner.user.profile?.avatarUrl
+          avatarUrl: round.winner.user.profile?.avatarUrl || round.winner.user.profile?.profileImageUrl || '/avatars/avatar-portrait-svgrepo-com.svg'
         } : null,
 
         // Statistiques des paiements pour ce round
-        totalExpected,
-        totalCollected,
         paymentsReceived,
         totalParticipants,
         isFullyPaid: paymentsReceived === totalParticipants,
@@ -207,6 +213,30 @@ export async function GET(
         }))
       }
     })
+
+    // Ordre des gagnants (winners order)
+    const winnersOrder = tontine.rounds.map(round => {
+      const isCompleted = round.status === 'COMPLETED'
+      const isCurrent = round.status === 'COLLECTING' || (round.status === 'PENDING' && round === nextRound)
+      const isUpcoming = round.status === 'PENDING' && round !== nextRound
+
+      const winnerDisplayName = round.winner?.user.profile?.firstName && round.winner?.user.profile?.lastName
+        ? `${round.winner.user.profile.firstName} ${round.winner.user.profile.lastName}`
+        : round.winner?.user.name
+
+      return {
+        position: round.roundNumber,
+        participantId: round.winner?.id,
+        userId: round.winner?.user.id,
+        name: winnerDisplayName || 'Non assigné',
+        avatarUrl: round.winner?.user.profile?.avatarUrl || round.winner?.user.profile?.profileImageUrl || '/avatars/avatar-portrait-svgrepo-com.svg',
+        status: isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming'
+      }
+    })
+
+    const creatorDisplayName = tontine.creator.profile?.firstName && tontine.creator.profile?.lastName
+      ? `${tontine.creator.profile.firstName} ${tontine.creator.profile.lastName}`
+      : tontine.creator.name
 
     // Données formatées pour le frontend
     const formattedTontine = {
@@ -227,12 +257,12 @@ export async function GET(
       createdAt: tontine.createdAt,
       updatedAt: tontine.updatedAt,
 
-      // Informations sur l'utilisateur
-      isOwner,
-      userRole: isOwner ? 'owner' : 'participant',
-
       // Créateur
-      creator: tontine.creator,
+      creator: {
+        id: tontine.creator.id,
+        name: creatorDisplayName,
+        email: tontine.creator.email
+      },
 
       // Participants avec statistiques
       participants: participantsWithStats,
@@ -243,6 +273,9 @@ export async function GET(
       totalRounds,
       completedRounds: completedRounds.length,
       completionPercentage,
+
+      // Ordre des gagnants
+      winnersOrder,
 
       // Prochain round
       nextRound: nextRound ? {
@@ -257,7 +290,7 @@ export async function GET(
           id: nextRound.winner.id,
           userId: nextRound.winner.user.id,
           name: nextRound.winner.user.name,
-          avatarUrl: nextRound.winner.user.profile?.avatarUrl
+          avatarUrl: nextRound.winner.user.profile?.avatarUrl || nextRound.winner.user.profile?.profileImageUrl
         } : null
       } : null
     }
@@ -265,12 +298,10 @@ export async function GET(
     return NextResponse.json({ tontine: formattedTontine })
 
   } catch (error) {
-    console.error('Erreur récupération détail tontine:', error)
+    console.error('Erreur récupération détail tontine admin:', error)
     return NextResponse.json(
       { error: 'Erreur serveur lors de la récupération de la tontine' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

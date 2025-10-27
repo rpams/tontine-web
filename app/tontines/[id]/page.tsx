@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTontine } from "@/lib/hooks/useTontines";
+import { useAuth } from "@/lib/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,23 @@ export default function TontineDetail() {
   const { data, isLoading, error } = useTontine(tontineId);
   const tontine = data?.tontine;
 
+  // Récupérer les données utilisateur
+  const { user, profile } = useAuth();
+
+  // Données utilisateur pour la navbar
+  const userName = profile?.showUsernameByDefault && profile?.username
+    ? profile.username
+    : `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || user?.name || 'Utilisateur';
+
+  const userEmail = user?.email || '';
+  const userAvatar = profile?.avatarUrl || profile?.profileImageUrl || "/avatars/avatar-portrait-svgrepo-com.svg";
+  const userRole = user?.role || 'USER';
+
+  const userVerification = {
+    isEmailVerified: user?.emailVerified || false,
+    isDocumentVerified: false // Peut être amélioré plus tard si nécessaire
+  };
+
   // Helper functions
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
@@ -108,7 +126,13 @@ export default function TontineDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
-        <NavbarDashboard />
+        <NavbarDashboard
+          userAvatar={userAvatar}
+          userName={userName}
+          userEmail={userEmail}
+          userRole={userRole}
+          userVerification={userVerification}
+        />
         <main className="max-w-6xl mx-auto px-4 md:px-12 py-4 md:py-8">
           {/* Navigation skeleton */}
           <div className="mb-6">
@@ -270,7 +294,13 @@ export default function TontineDetail() {
   if (error || !tontine) {
     return (
       <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
-        <NavbarDashboard />
+        <NavbarDashboard
+          userAvatar={userAvatar}
+          userName={userName}
+          userEmail={userEmail}
+          userRole={userRole}
+          userVerification={userVerification}
+        />
         <main className="max-w-6xl mx-auto px-4 md:px-12 py-4 md:py-8">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Tontine non trouvée</h2>
@@ -329,7 +359,13 @@ export default function TontineDetail() {
 
   return (
     <div className="min-h-screen bg-stone-100/90" style={{backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)', backgroundSize: '16px 16px'}}>
-      <NavbarDashboard />
+      <NavbarDashboard
+        userAvatar={userAvatar}
+        userName={userName}
+        userEmail={userEmail}
+        userRole={userRole}
+        userVerification={userVerification}
+      />
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 md:px-12 py-4 md:py-8">
